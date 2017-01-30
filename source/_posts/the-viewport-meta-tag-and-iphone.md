@@ -24,7 +24,7 @@ We found out early on in the [Democracy Now! mobile site](http://m.democracynow.
 
 My initial guess based on the documentation was to set both width and initial-scale, but this causes the site to be "too wide" when the phone is rotated from portrait to landscape:
 
-![results of specifying both width and scale](http://intwoplacesatonce.com/wp-content/uploads/2011/06/width_and_scale.png "width_and_scale.png")
+{% asset_img width_and_scale.png results of specifying both width and scale %}
 
 {% codeblock lang:html %}
 <meta name='viewport' content='width=device-width,initial-scale=1.0'>
@@ -32,7 +32,7 @@ My initial guess based on the documentation was to set both width and initial-sc
 
 Second thought was to set height as well as width, and initial-scale. This makes the portrait to landscape rotation work as expected, but causes a similar "too wide problem" when rotating from landscape to portrait:
 
-![results of specifying both width and height](http://intwoplacesatonce.com/wp-content/uploads/2011/06/width_and_height.png "width_and_height.png")
+{% asset_img width_and_height.png results of specifying both width and height %}
 
 {% codeblock lang:html %}
 <meta name='viewport' content='width=device-width,height=device-height,initial-scale=1.0'>
@@ -40,7 +40,7 @@ Second thought was to set height as well as width, and initial-scale. This makes
 
 The solution turned out to be not setting initial-scale at all. Device-width is enough to set the viewport width to the real width of the device, and a scale is not needed -- 1.0 is assumed it would seem.
 
-![specifying only device width gives the expected result](http://intwoplacesatonce.com/wp-content/uploads/2011/06/device_width_only.png "device_width_only.png")
+{% asset_img device_width_only.png specifying only device width gives the expected result %}
 
 {% codeblock lang:html %}
 <meta name='viewport' content='width=device-width'>
@@ -52,7 +52,7 @@ I haven't built a good mental model of what is going wrong here. My best guess i
 
 This model suggests another possible fix. If the model is correct, constraining the scale-factor to 1.0 would fix the problem. Only the number of available pixels will change, rather than both scale and width at the same time. The downside of this solution is that the user would no longer be able to zoom in. Trying it out, it works:
 
-![results of specifying max scale](http://intwoplacesatonce.com/wp-content/uploads/2011/06/with_max_scale.png "with_max_scale.png")
+{% asset_img with_max_scale.png results of specifying max scale %}
 
 {% codeblock lang:html %}
 <meta name='viewport' content='maximum-scale=1.0,width=device-width,initial-scale=1.0'>
