@@ -9,7 +9,7 @@ tags:
 ---
 I work with a data warehouse in Redshift. I recently needed to export a large set of data out. I started testing querires with smaller result sets using DataGrip's "Export to file..." option. When I moved to running the full queries with larger result sets, my connection to Redshift was timing out before the result set came in.
 
-Redshift has a documented way to export large data sets in the UNLOAD statement. UNLOAD will only export data to S3 buckets though, and I didn't have an S3 bucket easily available.
+Redshift has a documented way to export large data sets in the [UNLOAD statement](http://docs.aws.amazon.com/redshift/latest/dg/r_UNLOAD.html). UNLOAD will only export data to S3 buckets though, and I didn't have an S3 bucket easily available.
 
 Searching for solutions brought up some results describing exporting data using postgres's psql tool directly. In the end, I was able to export the data this way, but it took some experimentation to get it in the format I was looking for.
 
