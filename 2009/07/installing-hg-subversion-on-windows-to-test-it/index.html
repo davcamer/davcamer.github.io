@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>installing hg subversion on windows to test it | in two places at once</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="If you follow along, by the end of this blog post you’ll be able to run the hgsubversion tests on your Windows system. Unfortunately, it probably won’t work 100% correctly for you. Like the hgsubversi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="installing hg subversion on windows to test it">
+<meta property="og:url" content="http://intwoplacesatonce.com/2009/07/installing-hg-subversion-on-windows-to-test-it/index.html">
+<meta property="og:site_name" content="in two places at once">
+<meta property="og:description" content="If you follow along, by the end of this blog post you’ll be able to run the hgsubversion tests on your Windows system. Unfortunately, it probably won’t work 100% correctly for you. Like the hgsubversi">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://intwoplacesatonce.com/wp-content/uploads/2009/07/screen-capture1.png">
+<meta property="og:image" content="http://intwoplacesatonce.com/wp-content/uploads/2009/07/screen-capture-11.png">
+<meta property="og:image" content="http://intwoplacesatonce.com/wp-content/uploads/2009/07/screen-capture-2.png">
+<meta property="article:published_time" content="2009-07-20T04:19:28.000Z">
+<meta property="article:modified_time" content="2020-12-29T14:59:08.066Z">
+<meta property="article:author" content="David Cameron">
+<meta property="article:tag" content="Mercurial">
+<meta property="article:tag" content="Subversion">
+<meta property="article:tag" content="hg">
+<meta property="article:tag" content="hgsubversion">
+<meta property="article:tag" content="howto">
+<meta property="article:tag" content="open source">
+<meta property="article:tag" content="svn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://intwoplacesatonce.com/wp-content/uploads/2009/07/screen-capture1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="in two places at once" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">in two places at once</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://intwoplacesatonce.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-installing-hg-subversion-on-windows-to-test-it" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2009/07/installing-hg-subversion-on-windows-to-test-it/" class="article-date">
+  <time datetime="2009-07-20T04:19:28.000Z" itemprop="datePublished">2009-07-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      installing hg subversion on windows to test it
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><em>If you follow along, by the end of this blog post you’ll be able to run the hgsubversion tests on your Windows system. Unfortunately, it probably won’t work 100% correctly for you. Like the <a target="_blank" rel="noopener" href="http://bitbucket.org/durin42/hgsubversion/wiki/Home">hgsubversion wiki</a> says, “You should only be using this if you’re ready to hack on it, and go diving into the internals of Mercurial and/or Subversion.”</em></p>
+<p>I really like <a target="_blank" rel="noopener" href="http://mercurial.selenic.com/wiki/Mercurial">Mercurial</a>. I think Subversion is starting to get a little creaky. Even worse, for whatever reason access to the <a target="_blank" rel="noopener" href="http://confluence.public.thoughtworks.org/display/CCNET/Welcome+to+CruiseControl.NET">CruiseControl.net</a> <a target="_blank" rel="noopener" href="https://ccnet.svn.sourceforge.net/svnroot/ccnet/">subversion repository</a> is so slow for me from Australia that most operations I try eventually time out. It’s quite frustrating. Mercurial keeps most of the familiar Subversion operations but adds DVCS goodness like having all history in a local repository. That would nicely solve my speed problems.</p>
+<p>I’ve been maintaining a <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/ccnet/overview/">Mercurial repository of cc.net on bitbucket</a> for a few months now. I use the excellent <a target="_blank" rel="noopener" href="http://bitbucket.org/durin42/hgsubversion/wiki/Home">hg subversion extension</a>, installed on my Mac OS X partition. I don’t have an instance of Mercurial on my Windows partition with the hg subversion extension installed. To install on OS X I followed <a target="_blank" rel="noopener" href="http://farmdev.com/thoughts/64/try-out-the-mercurial-subversion-extension-hg-svn-on-mac-os-x/">this recipe</a>. I have not found a similarly detailed recipe for Windows. Here’s my attempt at writing such a recipe.</p>
+<p>The outline is:</p>
+<ol>
+<li> install <a target="_blank" rel="noopener" href="http://www.python.org/download/releases/2.6.2/">python 2.6</a></li>
+<li> <a target="_blank" rel="noopener" href="http://mercurial.selenic.com/wiki/WindowsInstall">build and install</a> Mercurial</li>
+<li> download <a target="_blank" rel="noopener" href="http://subversion.tigris.org/servlets/ProjectDocumentList?folderID=8100">subversion binaries</a></li>
+<li> install <a target="_blank" rel="noopener" href="http://subversion.tigris.org/servlets/ProjectDocumentList?folderID=8100">svn-python bindings</a></li>
+<li> install <a target="_blank" rel="noopener" href="http://gnuwin32.sourceforge.net/packages/diffutils.htm">gnu diffutils</a></li>
+<li> clone <a target="_blank" rel="noopener" href="http://bitbucket.org/durin42/hgsubversion/wiki/Home">hg subversion</a></li>
+<li> configure the <a target="_blank" rel="noopener" href="http://mercurial.selenic.com/wiki/Win32TextExtension">win32text extension</a></li>
+<li> install <a target="_blank" rel="noopener" href="http://code.google.com/p/python-nose/">nose</a></li>
+<li> run the tests</li>
+</ol>
+<p>I’ll go in to more detail – the above is at least an advanced level exercise. The entire install is a command-line exercise. Because of that, paths are very important. I use a folder <code>c:\code</code> to work with sources. I’ll leave that path in my examples, but remember if you would like to change it to something else that is okay. Do remember to change it everywhere though.</p>
+<h4 id="0-Setting-up-paths"><a href="#0-Setting-up-paths" class="headerlink" title="0. Setting up paths"></a>0. Setting up paths</h4><p>During installation I isolated myself somewhat by using a batch file to reset my path. That gave me more confidence that my existing TortoiseSVN and TortoiseHg installs wouldn’t interfere with the hgsubversion install. Visual Studio installs a <em>Visual Studio 2008 Commmand Prompt</em> shortcut on to the start menu that opens a command window with specific environment variables set. I copied it to create a similar shortcut for my install work. The shortcut uses these settings:</p>
+<p><img src="http://intwoplacesatonce.com/wp-content/uploads/2009/07/screen-capture1.png" alt="screen-capture.png"></p>
+<p>Then it’s a matter of editing <code>set_hg_paths.bat</code> to set the correct <code>%PATH%</code> value. It doesn’t matter if <code>%PATH%</code> includes folders that are not yet on disk, so you can set all your paths now and the appropriate pieces will be picked up when they are available. My <code>set_hg_paths.bat</code> file contains:</p>
+<pre lang="text">set PATH=c:\python26\;c:\python26\scripts\;c:\Program Files\svn-win32-1.6.3\bin;C:\Program Files\GnuWin32\bin\;c:\windows\system32;c:\windows;c:\windows\system32\wbem;</pre>
+
+<h4 id="1-Install-python-2-6"><a href="#1-Install-python-2-6" class="headerlink" title="1. Install python 2.6"></a>1. Install python 2.6</h4><p>Mercurial is written in python, runs on it, and hg subversion is a collection of python scripts so this is absolutely necessary. I downloaded <a target="_blank" rel="noopener" href="http://www.python.org/download/releases/2.6.2/">2.6.2</a> from the <a target="_blank" rel="noopener" href="http://www.python.org/">python home page</a>, and installed it to the default location of <code>c:\python26</code>.</p>
+<p>To test this step, open a command prompt using the shortcut from step 0. If you run the commands as shown, you should get the same output: <pre lang="text">c:\code>python --version<br>Python 2.6.2</pre></p>
+<h4 id="2-Build-and-install-Mercurial"><a href="#2-Build-and-install-Mercurial" class="headerlink" title="2. Build and install Mercurial"></a>2. Build and install Mercurial</h4><p>I have already tried out Mercurial on Windows, using two different pre-packaged Mercurial distributions: one for <a target="_blank" rel="noopener" href="http://mercurial.berkwood.com/">command-line</a> and one following the <a target="_blank" rel="noopener" href="http://bitbucket.org/tortoisehg/stable/wiki/Home">TortoiseSCM</a> <a target="_blank" rel="noopener" href="http://www.tortoisecvs.org/">tradition</a>.</p>
+<p>Unfortunately, the pre-built binaries do not seem to be appropriate for extensions. They package the python run-time internally. This is nice on the one hand because people can get Mercurial with a single download. It does make it difficult to experiment however because it is not clear how to add python and hg extensions to the packaged run-time. Maybe if hgsubversion runs well enough on Windows, it will be included in the packages.</p>
+<p>To try out hgsubversion, for now, I needed to download the Mercurial source. There are rough instructions for an <a target="_blank" rel="noopener" href="http://mercurial.selenic.com/wiki/WindowsInstall">install from source</a> on the Mercurial wiki. Since I don’t yet have a working hg in my installation environment, I downloaded the <a target="_blank" rel="noopener" href="http://mercurial.selenic.com/release/mercurial-1.3.tar.gz">1.3 source archive</a> from the <a target="_blank" rel="noopener" href="http://mercurial.selenic.com/release/?M=D">Mercurial site</a>. After downloading I unzipped to <code>c:\code\Mercurial_src</code>. The <a target="_blank" rel="noopener" href="http://mercurial.selenic.com/wiki/WindowsInstall#Overview">wiki</a>‘s Standard procedure section describes a two-step build process using build and install targets. I followed those steps.</p>
+<p>The build step compiles some C code. The <code>%PATH%</code> variable needs a C compiler for build to work. I have Visual Studio 2008 installed and it comes with a batch file to add the tools to the <code>%PATH%</code>. I added it on to the end of my <code>set_hg_paths.bat</code>. The compiler is only needed for this step, so you may prefer to just execute the batch file once.</p>
+<pre lang="text">set PATH=c:\python26\;c:\python26\scripts\;c:\Program Files\svn-win32-1.6.3\bin;C:\Program Files\GnuWin32\bin\;c:\windows\system32;c:\windows;c:\windows\system32\wbem;
+
+"c:\Program Files\Microsoft Visual Studio 9.0\VC\vcvarsall.bat"</pre>
+
+<p>With that set, I opened another command window with the new <code>set_hg_paths.bat</code> and ran the build and install steps. I’ve pasted the beginning and end of the input below. I also saved the <a href="http://intwoplacesatonce.com/wp-content/uploads/2009/07/mercurial_build.txt" title="mercurial_build.txt">full build and install log</a>.</p>
+<pre lang="text">c:\code>set PATH=c:\python26\;c:\python26\scripts\;c:\Program Files\svn-win32-1.6.3\bin;C:\Program Files\GnuWin32\bin\;c
+:\windows\system32;c:\windows;c:\windows\system32\wbem;
+
+c:\code>"c:\Program Files\Microsoft Visual Studio 9.0\VC\vcvarsall.bat"
+Setting environment for using Microsoft Visual Studio 2008 x86 tools.
+
+c:\code>echo %PATH%
+c:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE;c:\Program Files\Microsoft Visual Studio 9.0\VC\BIN;c:\Program
+Files\Microsoft Visual Studio 9.0\Common7\Tools;c:\WINDOWS\Microsoft.NET\Framework\v3.5;c:\WINDOWS\Microsoft.NET\Framewo
+rk\v2.0.50727;c:\Program Files\Microsoft Visual Studio 9.0\VC\VCPackages;C:\Program Files\\Microsoft SDKs\Windows\v6.0A\
+bin;c:\python26\;c:\python26\scripts\;c:\Program Files\svn-win32-1.6.3\bin;C:\Program Files\GnuWin32\bin\;c:\windows\sys
+tem32;c:\windows;c:\windows\system32\wbem;
+
+c:\code>cd Mercurial_src
+
+C:\code\Mercurial_src>python setup.py build --force
+running build
+running build_py
+copying mercurial\ancestor.py -> build\lib.win32-2.6\mercurial
+.... full log in the attached file ....
+copying contrib\win32\hg.bat -> build\scripts-2.6
+running build_mo
+warning: build_mo: could not find msgfmt executable, no translations will be built
+
+C:\code\Mercurial_src>python setup.py install --force --skip-build
+running install
+running install_lib
+copying build\lib.win32-2.6\hgext\acl.py -> c:\python26\Lib\site-packages\hgext
+.... full log in the attached file ....
+copying i18n\zh_TW.po -> c:\python26\Lib\site-packages\mercurial\i18n
+running install_egg_info
+Removing c:\python26\Lib\site-packages\mercurial-1.3-py2.6.egg-info
+Writing c:\python26\Lib\site-packages\mercurial-1.3-py2.6.egg-info
+
+C:\code\Mercurial_src></pre>
+
+<p>To test this step, I checked the version of hg that my command-prompt was now picking up. I added a new folder to my <code>%PATH%</code> at this point, although if you followed step 0, you will already have it included.</p>
+<pre lang="text">c:\code>echo %PATH%
+c:\python26\;c:\python26\scripts\;
+
+c:\code>hg version
+Mercurial Distributed SCM (version 1.3)
+
+Copyright (C) 2005-2009 Matt Mackall <mpm@selenic.com> and others
+This is free software; see the source for copying conditions. There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</pre>
+
+<h4 id="3-Download-Subversion-binaries"><a href="#3-Download-Subversion-binaries" class="headerlink" title="3. Download Subversion binaries"></a>3. Download Subversion binaries</h4><p>As I said before, Mercurial is written in python. To interact with Subversion it makes calls in to Subversion binaries written in C. The easiest, cleanest way to get an up to date version of the Subversion binaries is to download and install a binary distribution of Subversion. This needs to be compatible with the binaries in the next step, so I <a target="_blank" rel="noopener" href="http://subversion.tigris.org/servlets/ProjectDocumentList?folderID=8100&expandFolder=8100&folderID=8100">got both</a> from Subversion’s <a target="_blank" rel="noopener" href="http://subversion.tigris.org/getting.html#windows">download page</a> at tigris.org. I downloaded the <a target="_blank" rel="noopener" href="http://subversion.tigris.org/svn_1.6_releasenotes.html">1.6.3</a> binaries compiled against Apache 2.2. After downloading the zip package, I unzipped it to <code>c:\Program Files\svn-win32-1.6.3</code>.</p>
+<p>The other binary distributions of Subversion are great, but similarly to Mercurial the basic package is preferred here because it is more compatible with extensions. <a target="_blank" rel="noopener" href="http://www.sliksvn.com/en/download">Slik</a> has a very easy to install, minimal package that is great for clients where command-line or scripting is used. At my current job we use <a target="_blank" rel="noopener" href="http://www.visualsvn.com/server/">VisualSVN Server</a> as our Subversion repository because it is easy to install and administer on Windows. Unfortunately, I don’t believe they are useful to us for installing hgsubversion.</p>
+<p>After adding <code>C:\Program Files\svn-win32-1.6.3\bin</code> to my <code>set_hg_path.bat</code>, I tested this step by opening a new prompt and checking the version of <code>svn</code> that was being picked up:</p>
+<pre lang="text">c:\code>set PATH=c:\python26\;c:\python26\scripts\;c:\Program Files\svn-win32-1.
+6.3\bin;
+
+c:\code>svn --version
+svn, version 1.6.3 (r38063)
+   compiled Jun 22 2009, 09:59:12
+
+Copyright (C) 2000-2009 CollabNet.
+Subversion is open source software, see http://subversion.tigris.org/
+This product includes software developed by CollabNet (http://www.Collab.Net/).
+
+The following repository access (RA) modules are available:
+
+* ra_neon : Module for accessing a repository via WebDAV protocol using Neon.
+  - handles 'http' scheme
+  - handles 'https' scheme
+* ra_svn : Module for accessing a repository using the svn network protocol.
+  - with Cyrus SASL authentication
+  - handles 'svn' scheme
+* ra_local : Module for accessing a repository on local disk.
+  - handles 'file' scheme
+* ra_serf : Module for accessing a repository via WebDAV protocol using serf.
+  - handles 'http' scheme
+  - handles 'https' scheme</pre>
+
+<h4 id="4-Install-svn-python-bindings"><a href="#4-Install-svn-python-bindings" class="headerlink" title="4. Install svn-python bindings"></a>4. Install svn-python bindings</h4><p>This piece is the “glue-code” that allows Mercurial, written in Python, to call the binary Subversion API, written in C. To side-step as many problems as possible these should be from the same compile that created the Subversion binaries. For that reason, I downloaded <a target="_blank" rel="noopener" href="http://subversion.tigris.org/files/documents/15/46152/svn-python-1.6.3.win32-py2.6.exe">my bindings</a> from <a target="_blank" rel="noopener" href="http://subversion.tigris.org/servlets/ProjectDocumentList?expandFolder=91&folderID=8100">the same page</a> I used above. These are the python 2.6, svn 1.6.3, apache 2.2, win32 bindings packaged as an executable installer.</p>
+<p>After downloading, I ran the executable. The setup wizard automatically detected my Python 2.6 installation.<br><img src="http://intwoplacesatonce.com/wp-content/uploads/2009/07/screen-capture-11.png" alt="screen-capture-1.png"></p>
+<h4 id="5-Install-gnu-diffutils"><a href="#5-Install-gnu-diffutils" class="headerlink" title="5. Install gnu diffutils"></a>5. Install gnu diffutils</h4><p>Mercurial relies on a command-line <code>diff</code> program. <code>diff</code> is ubiquitous on Unix-related systems, but not a common program on Windows. There is a port of the gnu version for windows available as a package called <a target="_blank" rel="noopener" href="http://gnuwin32.sourceforge.net/packages/diffutils.htm">DiffUtils for Windows</a>. I downloaded the <a target="_blank" rel="noopener" href="http://gnuwin32.sourceforge.net/downlinks/diffutils.php">Complete package, except sources</a> and ran the wizard to install it.</p>
+<p><img src="http://intwoplacesatonce.com/wp-content/uploads/2009/07/screen-capture-2.png" alt="screen-capture-2.png"></p>
+<p>To check it, I added <code>C:\Program Files\GnuWin32\bin</code> to my <code>%PATH%</code> and ran <code>diff</code> to make sure it could be found:</p>
+<pre lang="text">c:\code>set PATH=c:\python26\;c:\python26\scripts\;c:\Program Files\svn-win32-1.
+6.3\bin;C:\Program Files\GnuWin32\bin\;
+
+c:\code>diff --version
+diff (GNU diffutils) 2.8.7
+Written by Paul Eggert, Mike Haertel, David Hayes,
+Richard Stallman, and Len Tower.
+
+Copyright (C) 2004 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</pre>
+
+<h4 id="6-Clone-hgsubversion"><a href="#6-Clone-hgsubversion" class="headerlink" title="6. Clone hgsubversion"></a>6. Clone hgsubversion</h4><p>Having Mercurial working locally at this point, I used it to clone the <a target="_blank" rel="noopener" href="http://bitbucket.org/durin42/hgsubversion/wiki/Home">hgsubversion</a> code from <a target="_blank" rel="noopener" href="http://bitbucket.org/">bitbucket</a>. I used the -U option to skip the local working copy checkout, because I want to configure an extension in the repository before getting the local working copy.</p>
+<pre lang="text">c:\code>set PATH=c:\python26\;c:\python26\scripts\;c:\Program Files\svn-win32-1.
+6.3\bin;C:\Program Files\GnuWin32\bin\;
+
+C:\code>hg clone -U http://bitbucket.org/durin42/hgsubversion/
+destination directory: hgsubversion
+requesting all changes
+adding changesets
+adding manifests
+adding file changes
+added 475 changesets with 1178 changes to 161 files</pre>
+
+<h4 id="7-Configure-the-win32text-extension"><a href="#7-Configure-the-win32text-extension" class="headerlink" title="7. Configure the win32text extension"></a>7. Configure the win32text extension</h4><p>Mercurial has a convention of storing line endings for text files as line-feeds only, the Unix convention. The Windows convention is to use both carriage-return and line-feed characters to mark line endings. To work with hgsubversion source on Windows without mixing line endings I configured the <a target="_blank" rel="noopener" href="http://mercurial.selenic.com/wiki/Win32TextExtension">win32text extension</a> to <a target="_blank" rel="noopener" href="http://mercurial.selenic.com/wiki/FAQ#FAQ.2BAC8-TechnicalDetails.What_about_Windows_line_endings_vs._Unix_line_endings.3F">handle conversion</a> as files move in and out of the working copy.</p>
+<p>To turn it on, I opened up <code>c:\code\hgsubversion\.hg\hgrc</code> and modified the content as follows:</p>
+<pre lang="ini">[paths]
+default = http://bitbucket.org/durin42/hgsubversion/
+
+[extensions]
+hgext.win32text=
+
+[encode]
+# Encode files that don't contain NUL characters.
+** = cleverencode:
+
+[decode]
+# Decode files that don't contain NUL characters.
+** = cleverdecode:
+
+[patch]
+# Turn on special handling for line-endings at patch-time
+eol = crlf
+
+[hooks]
+# Reject commits which would introduce windows-style text" files
+pretxncommit.crlf = python:hgext.win32text.forbidcrlf</pre>
+
+<p>After changing the config, I updated my working copy. Although there is a warning, I’m not sure how to best handle it.</p>
+<pre lang="text">C:\code>cd hgsubversion
+
+C:\code\hgsubversion>hg update
+WARNING: tests/test_push_eol.py already has CRLF line endings
+and does not need EOL conversion by the win32text plugin.
+Before your next commit, please reconsider your encode/decode settings in
+Mercurial.ini or C:\code\hgsubversion\.hg\hgrc.
+125 files updated, 0 files merged, 0 files removed, 0 files unresolved</pre>
+
+<p>Feeling a bit curious I opened up the files in <a target="_blank" rel="noopener" href="http://notepad-plus.sourceforge.net/uk/site.htm">Notepad++</a>, which can show line ending characters. All the files now had CR-LF endings, as expected.</p>
+<h4 id="8-Install-nose"><a href="#8-Install-nose" class="headerlink" title="8. Install nose"></a>8. Install nose</h4><p><a target="_blank" rel="noopener" href="http://code.google.com/p/python-nose/">nose</a> is an alternative Python test runner that hgsubversion uses. There is an explanation in the hgsubversion <a target="_blank" rel="noopener" href="http://bitbucket.org/durin42/hgsubversion/src/tip/README"><code>README</code> file</a>. Since I thought there would probably be test failures, I decided to install nose.</p>
+<p>The easiest way to install nose is with a script called <code>easy_install</code>. The Windows Python distribution does not come with the setuptools package that provides <code>easy_install</code> by default, so I installed it first. There is not yet a self-installing package of setuptools for Windows and Python 2.6. This <a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/309412/how-to-setup-setuptools-for-python-2-6-on-windows">stack overflow question</a> referred me to <a target="_blank" rel="noopener" href="http://peak.telecommunity.com/dist/ez_setup.py">this script</a> that downloaded and installed setuptools for me. I had to use <em>Save As…</em> in the browser to avoid ending up with html tags and escapes in the script.</p>
+<pre lang="text">c:\code>set PATH=c:\python26\;c:\python26\scripts\;c:\Program Files\svn-win32-1.
+6.3\bin;C:\Program Files\GnuWin32\bin\;
+
+c:\code>cd ez_setup
+
+C:\code\ez_setup>python ez_setup.py
+Downloading http://pypi.python.org/packages/2.6/s/setuptools/setuptools-0.6c9-py
+2.6.egg
+Processing setuptools-0.6c9-py2.6.egg
+Copying setuptools-0.6c9-py2.6.egg to c:\python26\lib\site-packages
+Adding setuptools 0.6c9 to easy-install.pth file
+Installing easy_install-script.py script to c:\python26\Scripts
+Installing easy_install.exe script to c:\python26\Scripts
+Installing easy_install-2.6-script.py script to c:\python26\Scripts
+Installing easy_install-2.6.exe script to c:\python26\Scripts
+
+Installed c:\python26\lib\site-packages\setuptools-0.6c9-py2.6.egg
+Processing dependencies for setuptools==0.6c9
+Finished processing dependencies for setuptools==0.6c9</pre>
+
+<p>With easy_install working, it <strong>is</strong> easy to install nose:</p>
+<pre lang="text">c:\code>set PATH=c:\python26\;c:\python26\scripts\;c:\Program Files\svn-win32-1.
+6.3\bin;C:\Program Files\GnuWin32\bin\;
+
+c:\code>easy_install nose
+Searching for nose
+Reading http://pypi.python.org/simple/nose/
+Reading http://somethingaboutorange.com/mrl/projects/nose/
+Best match: nose 0.11.1
+Downloading http://somethingaboutorange.com/mrl/projects/nose/nose-0.11.1.tar.gz
+
+Processing nose-0.11.1.tar.gz
+Running nose-0.11.1\setup.py -q bdist_egg --dist-dir c:\docume~1\admini~1\locals
+~1\temp\easy_install-uirbjm\nose-0.11.1\egg-dist-tmp-kslr2c
+no previously-included directories found matching 'doc\.build'
+Adding nose 0.11.1 to easy-install.pth file
+Installing nosetests-2.6-script.py script to c:\python26\Scripts
+Installing nosetests-2.6.exe script to c:\python26\Scripts
+Installing nosetests-script.py script to c:\python26\Scripts
+Installing nosetests.exe script to c:\python26\Scripts
+
+Installed c:\python26\lib\site-packages\nose-0.11.1-py2.6.egg
+Processing dependencies for nose
+Finished processing dependencies for nose</pre>
+
+<h4 id="9-Run-the-tests"><a href="#9-Run-the-tests" class="headerlink" title="9. Run the tests"></a>9. Run the tests</h4><p>After all that, I ran the tests by executing <code>nosetests</code> in the hgsubversion folder. The results give many failures. I started working to correct them a couple of weeks ago and posted my work to <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/hgsubversion-py26-win/">bitbucket</a>. I’ll have to write more about that in a subsequent post. Some of the failures today look new to me.</p>
+<p>The start and end of the log follows. Again, I’ve attached the <a href="http://intwoplacesatonce.com/wp-content/uploads/2009/07/hgsubversion_tests.txt" title="hgsubversion_tests.txt">full log</a>.</p>
+<pre lang="text">c:\code>set PATH=c:\python26\;c:\python26\scripts\;c:\Program Files\svn-win32-1.6.3\bin;C:\Program Files\GnuWin32\bin\;c
+:\windows\system32;c:\windows;c:\windows\system32\wbem;
+
+c:\code>"c:\Program Files\Microsoft Visual Studio 9.0\VC\vcvarsall.bat"
+Setting environment for using Microsoft Visual Studio 2008 x86 tools.
+
+c:\code>echo %PATH%
+c:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE;c:\Program Files\Microsoft Visual Studio 9.0\VC\BIN;c:\Program
+Files\Microsoft Visual Studio 9.0\Common7\Tools;c:\WINDOWS\Microsoft.NET\Framework\v3.5;c:\WINDOWS\Microsoft.NET\Framewo
+rk\v2.0.50727;c:\Program Files\Microsoft Visual Studio 9.0\VC\VCPackages;C:\Program Files\\Microsoft SDKs\Windows\v6.0A\
+bin;c:\python26\;c:\python26\scripts\;c:\Program Files\svn-win32-1.6.3\bin;C:\Program Files\GnuWin32\bin\;c:\windows\sys
+tem32;c:\windows;c:\windows\system32\wbem;
+
+C:\code>cd hgsubversion
+
+C:\code\hgsubversion>python setup.py build
+running build
+running build_py
+copying hgsubversion\util.py -> build\lib\hgsubversion
+
+C:\code\hgsubversion>nosetests
+..FEE..F..FFEEFFEEFFEEEEEEEEFFF..EEFFFFFEEFFFFEF.....FF..FFF.FFFFF..EE..FF.EEEEEEEEEEEEEEEEEEE..EEFF..FFFFFFFFFFFFFFFFFF
+FFFF..FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEEEEEEFFFFF...EEEEEEFFF......EEEFFEEF
+======================================================================
+ERROR: test_externals (tests.test_externals.TestFetchExternals)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\code\hgsubversion\tests\test_externals.py", line 60, in test_externals
+    self.assertEqual(ref0, repo[0]['.hgsvnexternals'].data())
+  File "c:\python26\lib\site-packages\mercurial\context.py", line 84, in __getitem__
+    return self.filectx(key)
+  File "c:\python26\lib\site-packages\mercurial\context.py", line 159, in filectx
+    fileid = self.filenode(path)
+  File "c:\python26\lib\site-packages\mercurial\context.py", line 148, in filenode
+    return self._fileinfo(path)[0]
+  File "c:\python26\lib\site-packages\mercurial\context.py", line 143, in _fileinfo
+    _('not found in manifest'))
+LookupError: .hgsvnexternals@000000000000: not found in manifest
+-------------------- >> begin captured stdout << ---------------------
+no changes found
+
+--------------------- >> end captured stdout << ----------------------
+.... full text in attached log ....
+======================================================================
+FAIL: test_rebase (tests.test_utility_commands.UtilityTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\code\hgsubversion\tests\test_utility_commands.py", line 176, in test_rebase
+    self.assertEqual(self.repo['tip'].parents()[0].parents()[0], self.repo[0])
+AssertionError: <changectx 000000000000> != <changectx 8bc599092f77>
+-------------------- >> begin captured stdout << ---------------------
+no changes found
+2 files updated, 0 files merged, 0 files removed, 0 files unresolved
+Nothing to rebase!
+
+--------------------- >> end captured stdout << ----------------------
+
+----------------------------------------------------------------------
+Ran 225 tests in 161.242s
+
+FAILED (errors=59, failures=132)</pre>
+<p>That’s it for now. I believe at this point you could install the extension. Things might not work correctly though. I’m going to attempt to get more tests working locally for myself before I try turning it on and cloning anything. Even after that I’ll need to try it with a few different Subversion repositories before using it for code I care about. SCM is too central to my development practices for me to use a shaky system.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://intwoplacesatonce.com/2009/07/installing-hg-subversion-on-windows-to-test-it/" data-id="ckja6a8i7004sl99sauio72hy" class="article-share-link">Share</a>
+      
+        <a href="http://intwoplacesatonce.com/2009/07/installing-hg-subversion-on-windows-to-test-it/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mercurial/" rel="tag">Mercurial</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/subversion/" rel="tag">Subversion</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hg/" rel="tag">hg</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hgsubversion/" rel="tag">hgsubversion</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/howto/" rel="tag">howto</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/open-source/" rel="tag">open source</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/svn/" rel="tag">svn</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2009/08/measuring-msbuild-performance/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          measuring msbuild performance
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2009/07/introducing-a-changeset-class-to-cruisecontrol-net-shifting-to-supertypes/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">introducing a ChangeSet class to CruiseControl.net: shifting to supertypes</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/cruisecontrol-net/" rel="tag">CruiseControl.net</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mercurial/" rel="tag">Mercurial</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/subversion/" rel="tag">Subversion</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/automation/" rel="tag">automation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bash/" rel="tag">bash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/batch-files/" rel="tag">batch files</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blocks/" rel="tag">blocks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/broken-code/" rel="tag">broken code</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/brutal-cast/" rel="tag">brutal cast</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c#</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/casting/" rel="tag">casting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cmd-scripts/" rel="tag">cmd scripts</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/code-on-bitbucket/" rel="tag">code on bitbucket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compiler/" rel="tag">compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/composition-over-inheritance/" rel="tag">composition over inheritance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/data-export/" rel="tag">data export</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/debugging/" rel="tag">debugging</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dispatch/" rel="tag">dispatch</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dispose/" rel="tag">dispose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/duplication/" rel="tag">duplication</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic/" rel="tag">dynamic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extension-methods/" rel="tag">extension methods</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f/" rel="tag">f#</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/fat32/" rel="tag">fat32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gmaps/" rel="tag">gmaps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/" rel="tag">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/google-maps/" rel="tag">google maps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hg/" rel="tag">hg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hgsubversion/" rel="tag">hgsubversion</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/howto/" rel="tag">howto</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/" rel="tag">html</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html5/" rel="tag">html5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/interactionist/" rel="tag">interactionist</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/introducing-changeset/" rel="tag">introducing ChangeSet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/" rel="tag">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/layout/" rel="tag">layout</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lean-on-the-compiler/" rel="tag">lean on the compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/message/" rel="tag">message</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/meta/" rel="tag">meta</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mixin/" rel="tag">mixin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mobile/" rel="tag">mobile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/msbuild/" rel="tag">msbuild</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/object-instantiation/" rel="tag">object instantiation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/objective-c/" rel="tag">objective-c</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/open-source/" rel="tag">open source</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/partial-classes/" rel="tag">partial classes</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance/" rel="tag">performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/" rel="tag">postgres</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/psql/" rel="tag">psql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/putty/" rel="tag">putty</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdc/" rel="tag">rdc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/recovery/" rel="tag">recovery</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redshift/" rel="tag">redshift</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/refactoring/" rel="tag">refactoring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/remote-desktop-connection/" rel="tag">remote desktop connection</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/resource-acquisition/" rel="tag">resource acquisition</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scope/" rel="tag">scope</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/screen/" rel="tag">screen</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/" rel="tag">ssh</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh-tunnel/" rel="tag">ssh tunnel</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svcutil/" rel="tag">svcutil</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svn/" rel="tag">svn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tcpip/" rel="tag">tcpip</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/test-doubles/" rel="tag">test doubles</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/testing/" rel="tag">testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/unit-tests/" rel="tag">unit tests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/unix/" rel="tag">unix</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/using/" rel="tag">using</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viewport/" rel="tag">viewport</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/win7/" rel="tag">win7</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/" rel="tag">windows</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/winxp/" rel="tag">winxp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/cruisecontrol-net/" style="font-size: 16.67px;">CruiseControl.net</a> <a href="/tags/mercurial/" style="font-size: 10px;">Mercurial</a> <a href="/tags/subversion/" style="font-size: 10px;">Subversion</a> <a href="/tags/automation/" style="font-size: 10px;">automation</a> <a href="/tags/bash/" style="font-size: 10px;">bash</a> <a href="/tags/batch-files/" style="font-size: 10px;">batch files</a> <a href="/tags/blocks/" style="font-size: 10px;">blocks</a> <a href="/tags/broken-code/" style="font-size: 10px;">broken code</a> <a href="/tags/brutal-cast/" style="font-size: 10px;">brutal cast</a> <a href="/tags/c/" style="font-size: 20px;">c#</a> <a href="/tags/casting/" style="font-size: 10px;">casting</a> <a href="/tags/cmd-scripts/" style="font-size: 10px;">cmd scripts</a> <a href="/tags/code-on-bitbucket/" style="font-size: 10px;">code on bitbucket</a> <a href="/tags/compiler/" style="font-size: 10px;">compiler</a> <a href="/tags/composition-over-inheritance/" style="font-size: 10px;">composition over inheritance</a> <a href="/tags/data-export/" style="font-size: 10px;">data export</a> <a href="/tags/debugging/" style="font-size: 10px;">debugging</a> <a href="/tags/dispatch/" style="font-size: 10px;">dispatch</a> <a href="/tags/dispose/" style="font-size: 10px;">dispose</a> <a href="/tags/duplication/" style="font-size: 13.33px;">duplication</a> <a href="/tags/dynamic/" style="font-size: 13.33px;">dynamic</a> <a href="/tags/extension-methods/" style="font-size: 10px;">extension methods</a> <a href="/tags/f/" style="font-size: 10px;">f#</a> <a href="/tags/fat32/" style="font-size: 10px;">fat32</a> <a href="/tags/gmaps/" style="font-size: 10px;">gmaps</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/google-maps/" style="font-size: 10px;">google maps</a> <a href="/tags/hg/" style="font-size: 10px;">hg</a> <a href="/tags/hgsubversion/" style="font-size: 10px;">hgsubversion</a> <a href="/tags/howto/" style="font-size: 10px;">howto</a> <a href="/tags/html/" style="font-size: 10px;">html</a> <a href="/tags/html5/" style="font-size: 10px;">html5</a> <a href="/tags/interactionist/" style="font-size: 10px;">interactionist</a> <a href="/tags/introducing-changeset/" style="font-size: 13.33px;">introducing ChangeSet</a> <a href="/tags/javascript/" style="font-size: 10px;">javascript</a> <a href="/tags/layout/" style="font-size: 10px;">layout</a> <a href="/tags/lean-on-the-compiler/" style="font-size: 10px;">lean on the compiler</a> <a href="/tags/message/" style="font-size: 10px;">message</a> <a href="/tags/meta/" style="font-size: 10px;">meta</a> <a href="/tags/mixin/" style="font-size: 10px;">mixin</a> <a href="/tags/mobile/" style="font-size: 10px;">mobile</a> <a href="/tags/msbuild/" style="font-size: 10px;">msbuild</a> <a href="/tags/object-instantiation/" style="font-size: 10px;">object instantiation</a> <a href="/tags/objective-c/" style="font-size: 10px;">objective-c</a> <a href="/tags/open-source/" style="font-size: 10px;">open source</a> <a href="/tags/partial-classes/" style="font-size: 10px;">partial classes</a> <a href="/tags/performance/" style="font-size: 10px;">performance</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/psql/" style="font-size: 10px;">psql</a> <a href="/tags/putty/" style="font-size: 10px;">putty</a> <a href="/tags/rdc/" style="font-size: 10px;">rdc</a> <a href="/tags/recovery/" style="font-size: 10px;">recovery</a> <a href="/tags/redshift/" style="font-size: 13.33px;">redshift</a> <a href="/tags/refactoring/" style="font-size: 20px;">refactoring</a> <a href="/tags/remote-desktop-connection/" style="font-size: 10px;">remote desktop connection</a> <a href="/tags/resource-acquisition/" style="font-size: 10px;">resource acquisition</a> <a href="/tags/scope/" style="font-size: 10px;">scope</a> <a href="/tags/screen/" style="font-size: 10px;">screen</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssh-tunnel/" style="font-size: 10px;">ssh tunnel</a> <a href="/tags/svcutil/" style="font-size: 10px;">svcutil</a> <a href="/tags/svn/" style="font-size: 10px;">svn</a> <a href="/tags/tcpip/" style="font-size: 10px;">tcpip</a> <a href="/tags/test-doubles/" style="font-size: 10px;">test doubles</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a> <a href="/tags/unit-tests/" style="font-size: 10px;">unit tests</a> <a href="/tags/unix/" style="font-size: 10px;">unix</a> <a href="/tags/using/" style="font-size: 10px;">using</a> <a href="/tags/viewport/" style="font-size: 10px;">viewport</a> <a href="/tags/win7/" style="font-size: 10px;">win7</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/winxp/" style="font-size: 10px;">winxp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">January 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/09/">September 2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/06/">June 2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2010/10/">October 2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2010/09/">September 2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2010/04/">April 2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2010/01/">January 2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2009/12/">December 2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2009/11/">November 2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2009/08/">August 2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2009/07/">July 2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2009/05/">May 2009</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/01/exporting-data-from-redshift/">exporting data from redshift</a>
+          </li>
+        
+          <li>
+            <a href="/2017/01/specifying-distkey-on-a-redshift-temp-table-in-datagrip/">specifying distkey on a redshift temp table in DataGrip</a>
+          </li>
+        
+          <li>
+            <a href="/2011/09/the-other-thing-about-using-blocks/">the other thing about &#34;using&#34; blocks</a>
+          </li>
+        
+          <li>
+            <a href="/2011/06/the-viewport-meta-tag-and-iphone/">the viewport meta tag, and iPhone</a>
+          </li>
+        
+          <li>
+            <a href="/2010/10/restoring-recovered-files-identity/">restoring recovered files identity</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 David Cameron<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'in-two-places-at-once';
+  
+  var disqus_url = 'http://intwoplacesatonce.com/2009/07/installing-hg-subversion-on-windows-to-test-it/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

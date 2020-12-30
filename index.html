@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>in two places at once</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="in two places at once">
+<meta property="og:url" content="http://intwoplacesatonce.com/index.html">
+<meta property="og:site_name" content="in two places at once">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="David Cameron">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="in two places at once" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">in two places at once</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://intwoplacesatonce.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-exporting-data-from-redshift" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/01/exporting-data-from-redshift/" class="article-date">
+  <time datetime="2017-02-01T03:05:33.000Z" itemprop="datePublished">2017-01-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/01/exporting-data-from-redshift/">exporting data from redshift</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>I work with a data warehouse in Redshift. I recently needed to export a large set of data out. I started testing querires with smaller result sets using DataGrip’s “Export to file…” option. When I moved to running the full queries with larger result sets, my connection to Redshift was timing out before the result set came in.</p>
+<p>Redshift has a documented way to export large data sets in the <a target="_blank" rel="noopener" href="http://docs.aws.amazon.com/redshift/latest/dg/r_UNLOAD.html">UNLOAD statement</a>. UNLOAD will only export data to S3 buckets though, and I didn’t have an S3 bucket easily available.</p>
+<p>Searching for solutions brought up some results describing exporting data using postgres’s psql tool directly. In the end, I was able to export the data this way, but it took some experimentation to get it in the format I was looking for.</p>
+<p>The steps I ended up taking were:</p>
+<ol>
+<li>Change psql to output in “unaligned” format:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\a</span><br></pre></td></tr></table></figure>
+This changes output from the ASCII-art default format to a comma-separated value format. Or really, separated by whatever character you like. I needed tabs.</li>
+<li>Change psql to use tab as the delimiter:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\f &#39;\t&#39;</span><br></pre></td></tr></table></figure>
+That’s the exact string you need to use. I first tried to pass a literal tab character using the <code>Control-V, Tab</code> pattern, but psql interprets the tab literal as whitespace. Quoting the tab changes the delimiter in to the full string of a tab surrounded by two quotes – not what I was hoping for.</li>
+<li>Change the output to target a file:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\o output_filename.tsv</span><br></pre></td></tr></table></figure>
+After this <code>psql</code> outputs query results to a file with the given name in the current directory. It clears the file before outputting. A simple <code>\o</code> without a filename later will change output back to standard output.</li>
+<li>Run the query as normal:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * ...</span><br></pre></td></tr></table></figure>
+The first line of the output file is a header row, followed by all the data rows with the specified delimiter, and finally a line reporting how many rows were selected.</li>
+</ol>
+<p>In my case, I then tar and bzip2’d the results and was able to <code>scp</code> them back to my laptop without trouble.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://intwoplacesatonce.com/2017/01/exporting-data-from-redshift/" data-id="ckja6a8gf0001l99sdpkx20yv" class="article-share-link">Share</a>
+      
+        <a href="http://intwoplacesatonce.com/2017/01/exporting-data-from-redshift/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/data-export/" rel="tag">data export</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/postgres/" rel="tag">postgres</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/psql/" rel="tag">psql</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redshift/" rel="tag">redshift</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-specifying-distkey-on-a-redshift-temp-table-in-datagrip" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/01/specifying-distkey-on-a-redshift-temp-table-in-datagrip/" class="article-date">
+  <time datetime="2017-01-18T03:24:09.000Z" itemprop="datePublished">2017-01-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/01/specifying-distkey-on-a-redshift-temp-table-in-datagrip/">specifying distkey on a redshift temp table in DataGrip</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>I’ve been doing some work in our Redshift data warehouse lately. Creating Temp Tables has simplified my queries dramatically. I’ve been using the DataGrip IDE to connect to Redshift. It has a <a target="_blank" rel="noopener" href="https://youtrack.jetbrains.com/issue/DBE-1078">minor bug</a> affecting <code>create table as</code> that I tripped over repeatedly while working out my queries.</p>
+<p>If the query includes a <code>distkey</code> or <code>sortkey</code>, DataGrip won’t recognize that the query continues after the <code>as</code> if there is nothing further on the line.</p>
+<p>But, I was able to quickly work around this by just putting <code>as</code> and <code>select</code> on the same line.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE table_name DISTKEY (id) SORTKEY (id) AS SELECT</span><br><span class="line">  DISTINCT(t.id) AS id</span><br><span class="line">FROM ...</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://intwoplacesatonce.com/2017/01/specifying-distkey-on-a-redshift-temp-table-in-datagrip/" data-id="ckja6a8gt000il99se8oycwp3" class="article-share-link">Share</a>
+      
+        <a href="http://intwoplacesatonce.com/2017/01/specifying-distkey-on-a-redshift-temp-table-in-datagrip/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redshift/" rel="tag">redshift</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-the-other-thing-about-using-blocks" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2011/09/the-other-thing-about-using-blocks/" class="article-date">
+  <time datetime="2011-09-01T17:39:57.000Z" itemprop="datePublished">2011-09-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2011/09/the-other-thing-about-using-blocks/">the other thing about &#34;using&#34; blocks</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>C#’s <code>using</code> statement is well recognized for one thing: calling dispose on objects so that you don’t have to. That bit is wonderful:</p>
+<pre lang="csharp">string contents;
+using (var f = File.OpenText("/path/to/file") {
+    contents = f.ReadToEnd();
+}</pre>
+
+<p>This is much simpler than the fully spelled out alternative:</p>
+<pre lang="csharp">string contents;
+var f = File.OpenText("/path/to/file");
+try {
+    contents = f.ReadToEnd();
+} finally {
+    f.Dispose();
+}</pre>
+
+<p>And even this longer form actually misses one of the more interesting aspects of the using statement…</p>
+<pre lang="csharp">string contents;
+var f = File.OpenText("/path/to/file");
+try {
+    contents = f.ReadToEnd();
+} finally {
+    f.Dispose();
+}
+f.ReadToEnd(); // oops! ObjectDisposedException at runtime
+f = null; // you could set it to null
+f.ReadToEnd(); // but now you have a NullReferenceException, even more mysterious</pre>
+
+<p>The using statement on the other hand, creates a scope, so its variable can’t be referenced at all after it is disposed:</p>
+<pre lang="csharp">string contents;
+using (var f = File.OpenText("/path/ro/file") {
+    contents = f.ReadToEnd();
+}
+f.ReadToEnd(); // unknown identifier error at compile-time</pre>
+
+<p>An entirely equivalent bit of code can be written, using an anonymous scope, but it starts to look quite baroque:</p>
+<pre lang="csharp">string contents;
+{
+    var f = File.OpenText("/path/ro/file");
+    try {
+        contents = f.ReadToEnd();
+    } finally {
+        f.Dispose();
+    }
+}
+f.ReadToEnd(); // Unknown identifier at compile-time again, but 2x the lines and 2x the scopes!</pre>
+
+<p>using provides the try-finally-dispose structure, and also provides a scope. The scope means a whole class of errors where resources are accessed after being released is transformed from run-time to compile-time errors. Dealing with errors at compile-time is quicker, and with the right tools to highlight problems, the compile problems can be seen directly in the code as it is being edited.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://intwoplacesatonce.com/2011/09/the-other-thing-about-using-blocks/" data-id="ckja6a8gu000jl99saamaanku" class="article-share-link">Share</a>
+      
+        <a href="http://intwoplacesatonce.com/2011/09/the-other-thing-about-using-blocks/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blocks/" rel="tag">blocks</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c#</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/compiler/" rel="tag">compiler</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dispose/" rel="tag">dispose</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lean-on-the-compiler/" rel="tag">lean on the compiler</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/object-instantiation/" rel="tag">object instantiation</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/resource-acquisition/" rel="tag">resource acquisition</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scope/" rel="tag">scope</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/using/" rel="tag">using</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-the-viewport-meta-tag-and-iphone" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2011/06/the-viewport-meta-tag-and-iphone/" class="article-date">
+  <time datetime="2011-06-29T18:37:58.000Z" itemprop="datePublished">2011-06-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2011/06/the-viewport-meta-tag-and-iphone/">the viewport meta tag, and iPhone</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Mobile phones have a couple of options when rendering existing web pages: they can render a page at the native resolution of the screen, or they can render it on a larger virtual screen and then “zoom out” so that the whole page fits on the screen. The virtual screen is called the “viewport.”</p>
+<p>Ideally screen resolution shouldn’t matter for the web, but many existing pages on the web won’t render well at a smartphone’s native resolution. After all, even in 1993 when the web started, most screens were at least 640 pixels wide. The iPhone by contrast is 320 pixels by 480 pixels[1]. Over the years, web designers have assumed that there will be at least that much width to lay out their pages across, and don’t consider how layouts break when the screen is narrower. In order to render all these existing web pages well, mobile browsers choose the path of rendering to a larger viewport and scaling the content to fit the page on screen. Safari on iOS uses 980 pixels as the default viewport width.</p>
+<p>When targeting a web page at small screen devices, it could be nice to have the screen resolution match the viewport size. The <a target="_blank" rel="noopener" href="http://developer.apple.com/library/safari/#documentation/AppleApplications/Reference/SafariWebContent/UsingtheViewport/UsingtheViewport.html">viewport meta tag</a> was introduced to allow a designer to request exactly that, that the phone should render the page at its native resolution.</p>
+<p>As explained in the <a target="_blank" rel="noopener" href="http://developer.apple.com/library/safari/#documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html%23//apple_ref/doc/uid/TP40008193-SW1">Safari html reference</a>, there are six things that can be specified on the meta tag:</p>
+<p>We found out early on in the <a target="_blank" rel="noopener" href="http://m.democracynow.org/">Democracy Now! mobile site</a> project that some of the attributes in combination have some surprising effects when combined with rotating the device. Ultimately, initial-scale turned out to be the culprit.</p>
+<p>My initial guess based on the documentation was to set both width and initial-scale, but this causes the site to be “too wide” when the phone is rotated from portrait to landscape:</p>
+<img src="/2011/06/the-viewport-meta-tag-and-iphone/width_and_scale.png" class="" title="results of specifying both width and scale">
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&#x27;viewport&#x27;</span> <span class="attr">content</span>=<span class="string">&#x27;width=device-width,initial-scale=1.0&#x27;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>Second thought was to set height as well as width, and initial-scale. This makes the portrait to landscape rotation work as expected, but causes a similar “too wide problem” when rotating from landscape to portrait:</p>
+<img src="/2011/06/the-viewport-meta-tag-and-iphone/width_and_height.png" class="" title="results of specifying both width and height">
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&#x27;viewport&#x27;</span> <span class="attr">content</span>=<span class="string">&#x27;width=device-width,height=device-height,initial-scale=1.0&#x27;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>The solution turned out to be not setting initial-scale at all. Device-width is enough to set the viewport width to the real width of the device, and a scale is not needed – 1.0 is assumed it would seem.</p>
+<img src="/2011/06/the-viewport-meta-tag-and-iphone/device_width_only.png" class="" title="specifying only device width gives the expected result">
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&#x27;viewport&#x27;</span> <span class="attr">content</span>=<span class="string">&#x27;width=device-width&#x27;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>When I come across a bug like this, I like trying to come up with a mental model of what is going wrong in the code to create the undesired behaviour. This is useful when debugging my own code and useful when trying to work around apparent bugs in other people’s code.</p>
+<p>I haven’t built a good mental model of what is going wrong here. My best guess is that the width and the scale are being decided at different points during a rotation, and are getting out of sync. In the first example it could be that the width and scale are decided before rotation: 320 and 1.0. Then during rotation scaling and width are both changed, but independently. For scale, it is decided that 320 viewport pixels are now being rendered across 480 physical pixels, so scale factor can be 3/2 (three physical pixels for every 2 virtual pixels). Independently, it is decided that the page can now be rendered across 480 pixels. We end up with a viewport that is 480 virtual pixels wide, scaled by 3/2 so that only 320 of those pixels are in the visible area.</p>
+<p>This model suggests another possible fix. If the model is correct, constraining the scale-factor to 1.0 would fix the problem. Only the number of available pixels will change, rather than both scale and width at the same time. The downside of this solution is that the user would no longer be able to zoom in. Trying it out, it works:</p>
+<img src="/2011/06/the-viewport-meta-tag-and-iphone/with_max_scale.png" class="" title="results of specifying max scale">
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&#x27;viewport&#x27;</span> <span class="attr">content</span>=<span class="string">&#x27;maximum-scale=1.0,width=device-width,initial-scale=1.0&#x27;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>The movement after a rotation as the page recombobulates itself seems revealing. It is different for each of the above combinations. I can’t show transitions here; you’ll have to try them out yourself to see.</p>
+<p>In the end, we went with the solution of only specifying ‘width=device-width’. This worked well on the iPhone and on other browsers. Other browsers have different freaky scale things that happen after a rotation, including one bug that is still affecting us on Android 2.1.</p>
+<p>Thanks to Dani Schufeldt for testing and raising this defect until it was fixed properly, and Ted Nielsen for working the layouts around it.</p>
+<p>[1] I’m ignoring the double-density iPhone 4 screen, because I can’t remember the separate terminology to keep it all straight. I might come back later and edit the blog post.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://intwoplacesatonce.com/2011/06/the-viewport-meta-tag-and-iphone/" data-id="ckja6a8gv000ml99se7zdcr3b" class="article-share-link">Share</a>
+      
+        <a href="http://intwoplacesatonce.com/2011/06/the-viewport-meta-tag-and-iphone/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/html/" rel="tag">html</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/html5/" rel="tag">html5</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/layout/" rel="tag">layout</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/meta/" rel="tag">meta</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mobile/" rel="tag">mobile</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/screen/" rel="tag">screen</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/viewport/" rel="tag">viewport</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-restoring-recovered-files-identity" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2010/10/restoring-recovered-files-identity/" class="article-date">
+  <time datetime="2010-10-16T19:08:43.000Z" itemprop="datePublished">2010-10-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2010/10/restoring-recovered-files-identity/">restoring recovered files identity</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>I have a couple of one terabyte external hard drives. When I first got them I formatted them with FAT32 so that I could read and write them from both Windows and OS X.</p>
+<p>FAT32 is not a <a target="_blank" rel="noopener" href="http://en.wikipedia.org/wiki/Journaling_file_system">journaling filesystem</a>, which means if a write operation is interrupted the drive can end up in an inconsistent state. Within the first month of using the drive, I corrupted the filesystem. I forget exactly what happened: did I knock the power cord out? forget to eject the drive?</p>
+<p>Luckily when this happens to a FAT32 disk the files can be recovered. Unfortunately, the filenames are lost. You get a folder called <code>FOUND.000</code> with files named <code>FILE0000.CHK</code> up to, in my case, <code>FILE0820.CHK</code>. The extension on filenames is important on Windows and on OS X as well because Finder relies on it.</p>
+<p>Unix-like systems come with a utility, called <code>file</code>, that can determine file types by examining the contents. When I first read about file it was described as checking the <a target="_blank" rel="noopener" href="http://en.wikipedia.org/wiki/File_format#Magic_number">first 2-bytes</a>, called the magic number or magic cookie. More modern versions must check more of the file, because they offer more information than can be contained in 2-bytes.</p>
+<pre lang="bash">➜ {ninja} FOUND.000 $ file *.CHK
+FILE0004.CHK: RIFF (little-endian) data, AVI, 628 x 254, 25.00 fps, video: DivX 5, audio: MPEG-1 Layer 3 (stereo, 48000 Hz)
+FILE0007.CHK: RIFF (little-endian) data, AVI, 580 x 306, 23.98 fps, video: DivX 5, audio: MPEG-1 Layer 3 (stereo, 48000 Hz)
+FILE0009.CHK: RIFF (little-endian) data, AVI, 576 x 320, 23.98 fps, video: XviD, audio: MPEG-1 Layer 3 (stereo, 48000 Hz)
+FILE0013.CHK: RIFF (little-endian) data, AVI, 612 x 250, 23.98 fps, video: DivX 5, audio: MPEG-1 Layer 3 (stereo, 48000 Hz)
+FILE0016.CHK: RIFF (little-endian) data, AVI, 592 x 320, 25.00 fps, video: XviD, audio: MPEG-1 Layer 3 (stereo, 48000 Hz)
+FILE0019.CHK: RIFF (little-endian) data, AVI, 608 x 288, 25.00 fps, video: XviD, audio: MPEG-1 Layer 3 (stereo, 48000 Hz)
+FILE0022.CHK: RIFF (little-endian) data, AVI, 640 x 272, 23.98 fps, video: XviD, audio: MPEG-1 Layer 3 (stereo, 44100 Hz)
+FILE0026.CHK: PNG image, 640 x 272, 8-bit/color RGB, non-interlaced
+FILE0027.CHK: PC bitmap, Windows 3.x format, 640 x 272 x 32
+FILE0028.CHK: PNG image, 640 x 272, 8-bit/color RGB, non-interlaced</pre>
+
+<p>I wanted to at least check what the contents of my FOUND files were before deleting them. I needed to get the appropriate extensions back on the filenames so that finder and other tools would work with them properly. I thought I should be able to do it completely in the shell, and best of all, it’s already a REPL!</p>
+<p>First step was to sort them by type.</p>
+<pre lang="bash">➜ {ninja} FOUND.000 $ file *.CHK | grep PNG
+FILE0026.CHK: PNG image, 640 x 272, 8-bit/color RGB, non-interlaced
+FILE0028.CHK: PNG image, 640 x 272, 8-bit/color RGB, non-interlaced</pre>
+
+<p>Next I needed the filename by cutting the first 8 characters. I did not know about <code>cut</code> before but I’ve certainly needed to pull a section out of a line before. I expect I’ll be using it again.</p>
+<pre lang="bash">➜ {ninja} FOUND.000 $ file *.CHK | grep PNG | cut -c 1-8
+FILE0026
+FILE0028</pre>
+
+<p>I needed to turn these lines in to separate <code>mv</code> commands and <code>xargs</code> does exactly that. I had not used <code>xargs</code> beyond entirely simple commands before but the <code>man</code> page was enough to get me started. Since I was about to move files without a safety net, I wanted to do a quick test first.</p>
+<pre lang="bash">➜ {ninja} FOUND.000 $ file *.CHK | grep PNG | cut -c 1-8 | xargs -I filename echo filename.CHK filename.png
+FILE0026.CHK FILE0026.png
+FILE0028.CHK FILE0028.png</pre>
+
+<p>Looked good, so it was time for the real command.</p>
+<pre lang="bash">➜ {ninja} FOUND.000 $ file *.CHK | grep PNG | cut -c 1-8 | xargs -I filename mv -v filename.CHK filename.png
+FILE0026.CHK -> FILE0026.png
+FILE0028.CHK -> FILE0028.png</pre>
+
+<p>With the extensions corrected Finder is once again previewing and opening the files correctly. It’s working well for videos and images. I think multi-volume rars are going to be more of a challenge.</p>
+<p>This was all prompted by <a target="_blank" rel="noopener" href="http://manytricks.com/usher/">Usher</a> being released today. I’ve wanted an application to manage videos on OS X for a while.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://intwoplacesatonce.com/2010/10/restoring-recovered-files-identity/" data-id="ckja6a8gr000fl99sak8lan2i" class="article-share-link">Share</a>
+      
+        <a href="http://intwoplacesatonce.com/2010/10/restoring-recovered-files-identity/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/bash/" rel="tag">bash</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/fat32/" rel="tag">fat32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/recovery/" rel="tag">recovery</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/unix/" rel="tag">unix</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-objective-c-test-doubles-on-the-cheap-with-brutal-cast" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2010/09/objective-c-test-doubles-on-the-cheap-with-brutal-cast/" class="article-date">
+  <time datetime="2010-09-13T20:56:39.000Z" itemprop="datePublished">2010-09-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2010/09/objective-c-test-doubles-on-the-cheap-with-brutal-cast/">objective-c test doubles on the cheap with brutal cast</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Objective-C has the power of Ruby, with duck-typing and dynamic dispatch in the object layer. At the same time it has the power of C, with direct access to memory layouts and static-weak typing below the object layer. Sometimes, the two powers can be combined for some unexpected results.</p>
+<p>On my current project we are trying to unit test as much functionality as we reasonably can. I am quite happy to write interactionist tests, so I need test doubles. Although the Objective-C compiler does static type checking at compile time, at run-time Objective-C objects will respond to any message for which they have a method defined.</p>
+<p>This makes creating test doubles very easy. Consider a controller that accepts an error delegated from a CLLocationManager, and delegates it on to a logging class. Fragments of the classes involved might look like this:</p>
+<pre lang="objective-c">@interface Logger : NSObject
+
+- (void)log:(NSError *)error;
+
+@end
+
+@interface LocationSensitiveController <CLLocationManagerDelegate> : NSObject
+
+- (id)initWithLogger:(Logger *)logger;
+- (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error;
+
+@end</pre>
+
+<p>In my test I would like to use a test double in place of the logger, and assert that the same error gets passed along:</p>
+<pre lang="objective-c">- (void)testShouldPassErrorToLogger;
+{
+  Logger *stubLogger = // how to create the stub logger?
+  LocationSensitiveController *controller = [[[LocationSensitiveController alloc] initWithLogger:stubLogger] autorelease];
+</pre>
+
+<p>The stub logger need only understand the log: message to serve its purpose. It does not need to have any relationship to the Logger class. I’ve been calling these classes “Pretend…” because the class is only pretending to be the other type. They would be stubs in the <a target="_blank" rel="noopener" href="http://martinfowler.com/articles/mocksArentStubs.html#TheDifferenceBetweenMocksAndStubs">Test Double taxonomy</a> that Martin Fowler popularised.</p>
+<pre lang="objective-c">@interface PretendLogger : NSObject
+
+- (void)log:(NSError *)error;
+- (NSError *)receivedError;
+
+@end</pre>
+
+<p>The compiler will reject a straight assignment:</p>
+<pre lang="objective-c">  Logger *stubLogger = [[[PretendLogger alloc] init] autorelease]; // type error</pre>
+
+<p>The low-level C power can be used to convince the compiler otherwise:</p>
+<pre lang="objective-c">  Logger *stubLogger = (Logger *)[[[PretendLogger alloc] init] autorelease];</pre>
+
+<p>In C this type of cast is sometimes called a brutal cast. The cast tells the compiler to interpret the same area of memory as a different type. All Objective-C classes share the same basic memory layout, so in the example the cast “sneaks” the PretendLogger past the compile-time static checking and in to the LocationSensitiveController instance. There it will receive messages intended for Logger, and because it implements a method for the same selector (log:), the code will run successfully.</p>
+<p>Using a cast, I can write the test using my PretendLogger class:</p>
+<pre lang="objective-c">@implementation LocationSensitiveControllerTest
+
+- (void)testShouldPassErrorToLogger;
+{
+  Logger *stubLogger = [[[PretendLogger alloc] init] autorelease];
+  LocationSensitiveController *controller = [[[LocationSensitiveController alloc] initWithLogger:stubLogger] autorelease];
+  NSError *expectedError = [NSError errorWithDomain:@"domain string" code:666 userInfo:nil];
+
+  [controller locationManager:nil didFailWithError:expectedError];
+
+  NSError *actualError = [(PretendLogger *)stubLogger receivedError];
+  GHAssertEquals(expectedError, actualError, @"error should be received by logger");
+}
+
+@end</pre>
+
+<p>Eventually a <a target="_blank" rel="noopener" href="http://www.mulle-kybernetik.com/software/OCMock/">mocking framework</a> makes sense, or real classes can be used with <a target="_blank" rel="noopener" href="http://www.cocoadev.com/index.pl?MethodSwizzling">method swizzling</a>. When getting started on a project or a new area of code, this is a very simple approach to get some interaction tests going.</p>
+<p>I’ve posted a complete xcode project incorporating the example test to <a target="_blank" rel="noopener" href="http://github.com/davcamer/cheap_objc_mocks">github</a>.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://intwoplacesatonce.com/2010/09/objective-c-test-doubles-on-the-cheap-with-brutal-cast/" data-id="ckja6a8gp000cl99s1s209gq4" class="article-share-link">Share</a>
+      
+        <a href="http://intwoplacesatonce.com/2010/09/objective-c-test-doubles-on-the-cheap-with-brutal-cast/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/brutal-cast/" rel="tag">brutal cast</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/casting/" rel="tag">casting</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dispatch/" rel="tag">dispatch</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dynamic/" rel="tag">dynamic</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/interactionist/" rel="tag">interactionist</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/message/" rel="tag">message</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/objective-c/" rel="tag">objective-c</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/test-doubles/" rel="tag">test doubles</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/testing/" rel="tag">testing</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/unit-tests/" rel="tag">unit tests</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-multiple-return-values-and-refactoring-javascript" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2010/04/multiple-return-values-and-refactoring-javascript/" class="article-date">
+  <time datetime="2010-04-28T19:57:44.000Z" itemprop="datePublished">2010-04-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2010/04/multiple-return-values-and-refactoring-javascript/">multiple return values and refactoring javascript</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>I’ve been working on an entry for Victoria’s AppMyState competition. Although I started by doing some javascript and some Ruby on Rails, the RoR part quickly became superfluous and I ended up writing a purely javascript app. It’s a mash-up of Google Maps, Google’s geocoding and hopefully some Street View too, so javascript is a good fit. There’s also a python script to massage the government data in to a useable form, but that’s behind the scenes.</p>
+<p>The data I’m displaying is divided in to 11 categories and I want to treat each category separately, so I was ending up with repetitive code.</p>
+<pre lang="javascript">var horseTroughMgr = new MarkerManager(map);
+var horseTroughMarkers = [];
+var i = Horse_Trough.length;
+while (i--) {
+  var trough = Horse_Trough[i];
+  var point = new GLatLng(trough.latitude, trough.longitude);
+  var marker = createMarker(point,'
+
+#### ' + trough.category + '
+');
+  horseTroughMarkers.push(marker);
+  horseTroughMgr.addMarker(marker, 0);
+}
+horseTroughMgr.refresh();
+
+var litterBinMgr = new MarkerManager(map);
+var i = Litter_Bin.length;
+while (i--) {
+  var bin = Litter_Bin[i];
+  var point = new GLatLng(bin.latitude, bin.longitude);
+  var marker = createMarker(point,'
+
+#### ' + bin.category + '
+');
+  litterBinMgr.addMarker(marker, 19);
+}
+litterBinMgr.refresh();
+
+var hoopMgr = new MarkerManager(map);
+var i = Hoop.length;
+while (i--) {
+  var hoop = Hoop[i];
+  var point = new GLatLng(hoop.latitude, hoop.longitude);
+  var marker = createMarker(point,'
+
+#### ' + hoop.category + '
+');
+  hoopMgr.addMarker(marker, 15);
+}
+hoopMgr.refresh();</pre>
+
+<p>… and 8 more similar blocks.</p>
+<p>The first block has an extra list of markers, and I wanted to add that to the other blocks. I also had an intuition that I didn’t need both the list and the manager. I was holding back because I wasn’t sure, and with the duplication I didn’t feel that confident about refactoring. Then I remembered I could have two return values, and things started getting easy:</p>
+<pre lang="javascript">function setupCategory(map, data, minZoom) {
+  var mgr = new MarkerManager(map);
+  var list = [];
+
+  var i = data.length;
+  while (i--) {
+    var item = data[i];
+    var point = new GLatLng(item.latitude, item.longitude);
+    var marker = createMarker(point,'
+
+#### ' + item.category + '
+');
+    list.push(marker);
+    mgr.addMarker(marker, minZoom);
+  }
+  mgr.refresh();
+  return { manager: mgr, list: list };
+}
+
+function initialize() {
+  var map = new GMap2(document.getElementById("map"));
+  map.setCenter(new GLatLng(-37.8062649904, 144.96165842), 10);
+  map.setUIToDefault();
+
+  var trough = setupCategory(map, Horse_Trough, 0);
+  var bin = setupCategory(map, Litter_Bin, 19);
+  var hoop = setupCategory(map, Hoop, 15);</pre>
+
+<p>Having it in this form made it <strong>very</strong> easy to figure out that I didn’t need the manager returned from setupCategory(), and I could only return the list. And because it was only in one place, it was easy to change.</p>
+<p>This progression works well for me when I’m refactoring: eliminate the duplication, which makes it easier to see a way to simplify the code. Sometimes simplifying the code exposes more duplication and it turns in to a cycle, but not always. I’m often tempted to try to do this in two steps, but that usually ends up in trouble where I’m making mistakes, breaking things, and then hacking them back together.</p>
+<p>Javascript’s object literals made it easy to return two values which is what I needed here. In C# I would have needed a new class or some anonymous class and reflection. (Or maybe the dynamic keyword in C#4?) It is higher friction in static languages. This must be the reduced friction dynamic language enthusiasts brag about!</p>
+<p>I should note that this seems not to be the best way to handle markers in many categories. It’s better to have a manager per-category.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://intwoplacesatonce.com/2010/04/multiple-return-values-and-refactoring-javascript/" data-id="ckja6a8go000bl99s1uu55qvr" class="article-share-link">Share</a>
+      
+        <a href="http://intwoplacesatonce.com/2010/04/multiple-return-values-and-refactoring-javascript/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dynamic/" rel="tag">dynamic</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gmaps/" rel="tag">gmaps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/google-maps/" rel="tag">google maps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/" rel="tag">javascript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/refactoring/" rel="tag">refactoring</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-remote-desktop-connection-to-localhost-a-regression-in-windows-7" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2010/01/remote-desktop-connection-to-localhost-a-regression-in-windows-7/" class="article-date">
+  <time datetime="2010-01-28T03:57:16.000Z" itemprop="datePublished">2010-01-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2010/01/remote-desktop-connection-to-localhost-a-regression-in-windows-7/">remote desktop connection to localhost: a regression in Windows 7?</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>I maintain a Windows server. It is web-facing, and lives in a DMZ on the other side of the world from me. I have to install new programs every now and then. Windows being Windows, it’s easiest to do this with a desktop session. Remote Desktop Connection is the key tool for doing this. Since the version of Remote Desktop Protocol (RDP) I’m connecting to <a target="_blank" rel="noopener" href="http://en.wikipedia.org/wiki/Remote_Desktop_Protocol">isn’t secure</a> over the public Internet I use an <a target="_blank" rel="noopener" href="http://en.wikipedia.org/wiki/Ssh_tunnel#SSH_tunneling">ssh tunnel</a> to connect. This is easy to <a target="_blank" rel="noopener" href="http://oldsite.precedence.co.uk/nc/putty.html">set-up in Putty</a>.</p>
+<p><img src="http://intwoplacesatonce.com/wp-content/uploads/2010/01/01_initial_settings.png" alt="01_initial_settings.png"></p>
+<p>An ssh tunnel works by accepting packets on one side of the ssh connection, and putting them back in to the TCP/IP stack on the other side of the tunnel – as if the packets originated from the “far” computer. This can be done in either direction. In the screenshot above I’ve configured a tunnel accepting packets on my local machine. They will be re-injected on the remote machines stack addressed to “localhost:3389”. In other words a program connecting to my computer’s port 3390 will actually connect to the remote computer’s port 3389. Port 3389 is Remote Desktop Protocol, so if I point RDC at localhost:3390, I’ll connect to the remote computer’s RDP server.</p>
+<p><img src="http://intwoplacesatonce.com/wp-content/uploads/2010/01/02_RDC_connection_localhost.png" alt="02_RDC_connection_localhost.png"></p>
+<p>I recently started using Windows 7 and this set up broke. It seems in Windows 7, Remote Desktop Connection prevents connections to localhost. Trying to work around the limit using 127.0.0.1 or your public IP address or computer name does not work either. RDC still recognises that you are, apparently, connecting to the computer you are already connected to. This is an awkward limitation when using an ssh tunnel or some other connection forwarding.</p>
+<p>Luckily there is a workaround.</p>
+<p>Apparently Windows XP before service pack 2 had <a target="_blank" rel="noopener" href="http://www.bitvise.com/remote-desktop">this same limitation</a>. People worked around it by pointing RDC at 127.0.0.2. It’s not used that often, but the whole range of addresses starting with 127 are all routed back to the local machine. In other words you always <a target="_blank" rel="noopener" href="http://en.wikipedia.org/wiki/Localhost#IPv4">have a /8 network</a> running on your own machine. To make this work, I had to check the “Local ports accept connections from other hosts” option for putty. Without the option putty will only listen for connections to address 127.0.0.1. With the option it accepts connections on any address. Now I can point RDC at 127.0.0.2:3390 and get connected to the remote desktop, securely.</p>
+<p><img src="http://intwoplacesatonce.com/wp-content/uploads/2010/01/03_revised_settings.png" alt="03_revised_settings.png"></p>
+<p>It seems a strange limitation for RDC to refuse to connect to localhost. I can understand the initial idea; having this limit would prevent remoting to a computer you are already remoted to. That’s an easy enough mistake to make if you are managing several servers, and it’s a nice save. The strange bit is that someone repealed the limit in XP SP2, but now it is back again. How does that happen? Was SP2 on a branch, and they forgot to merge it back? Was the limit in the original spec, and the spec didn’t get updated when the limitation was removed? Did they just decide the limit feature was back in? As someone stung by the reintroduction of the feature, it feels like an accidental regression.</p>
+<p><img src="http://intwoplacesatonce.com/wp-content/uploads/2010/01/04_RDC_connection_127_0_0_21.png" alt="04_RDC_connection_127_0_0_2.png"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://intwoplacesatonce.com/2010/01/remote-desktop-connection-to-localhost-a-regression-in-windows-7/" data-id="ckja6a8gq000el99s7vtk055y" class="article-share-link">Share</a>
+      
+        <a href="http://intwoplacesatonce.com/2010/01/remote-desktop-connection-to-localhost-a-regression-in-windows-7/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/putty/" rel="tag">putty</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rdc/" rel="tag">rdc</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/remote-desktop-connection/" rel="tag">remote desktop connection</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ssh/" rel="tag">ssh</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ssh-tunnel/" rel="tag">ssh tunnel</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tcpip/" rel="tag">tcpip</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/win7/" rel="tag">win7</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/windows/" rel="tag">windows</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/winxp/" rel="tag">winxp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-moving-on-to-go-but-ending-up-much-further-afield" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2010/01/moving-on-to-go-but-ending-up-much-further-afield/" class="article-date">
+  <time datetime="2010-01-16T03:51:11.000Z" itemprop="datePublished">2010-01-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2010/01/moving-on-to-go-but-ending-up-much-further-afield/">moving on to go, but ending up much further afield</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>While I was preparing my last blog post about mixins in C#, I was also reading about go. From looking at go’s syntax, I thought I would be able to replace the C# code one-for-one with go code and end up with a valid program. I thought <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/csharp_to_go/changeset/cd1b05edfddb/">this would be the code</a>:</p>
+<pre lang="none">// Not actually valid go!
+
+package main
+
+import "fmt"
+
+type IAddress interface {
+    StreetNumber string;
+    StreetName string;
+}
+func (a IAddress) ToOneLineFormat() string {
+    return a.StreetNumber() + " " + a.StreetName()
+}
+
+type Address1 struct {
+    StreetNumber, StreetName string
+}
+type Address2 struct {
+    StreetNumber, StreetName string
+}
+
+func main() {
+    address1 := &Address1{"12A", "Spencer Street"};
+    fmt.Println(address1.ToOneLineFormat());
+
+    address2 := &Address2{"12A", "Spencer Street"};
+    fmt.Println(address2.ToOneLineFormat())
+}</pre>
+
+<p>I liked this code. It’s slightly more lightweight than the equivalent C# because the interfaces don’t need to be explicitly declared on the implementing classes. Otherwise it’s quite similar. Declaring funcs away from types seemed a natural analogue to the interface + extension methods approach I described in the last post.</p>
+<p>But this is not valid go code. Why not?</p>
+<p>The first point is, that I’ve confused C#’s concept of properties with both fields and methods in my go code. The declarations in the structs can remain as fields, but the declarations in the interface must <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/csharp_to_go/changeset/38a29a5faf45/">change to be methods</a>. My interface needs to be:</p>
+<pre lang="none">type IAddress interface {
+    StreetNumber() string;
+    StreetName() string;
+}</pre>
+
+<p>Now, to conform to the interface the two Address types need to have <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/csharp_to_go/changeset/512eecb12230/">methods that correspond to the interface</a>. Not fields.</p>
+<pre lang="none">type Address1 struct {
+    streetNumber, streetName string
+}
+func (a Address1) StreetNumber() { return a.streetNumber }
+func (a Address1) StreetName() { return a.streetName }
+type Address2 struct {
+    streetNumber, streetName string
+}
+func (a Address2) StreetNumber() { return a.streetNumber }
+func (a Address2) StreetName() { return a.streetName }</pre>
+
+<p>Address1 and Address2 now both conform to the IAddress interface, though at the price of duplicate property/accessor/getter code. Accessors like this aren’t particularly idiomatic for go, so there is no syntactic sugar to support them. Members are intended to either be fields, possibly public, or methods implementing significant behaviour.</p>
+<p>The next problem arises because in go methods cannot be defined on interfaces. The syntax would seem to allow it, but it is simply illegal. The receive of a method must be a pointer to a named type or a named type itself. No interfaces. And also none of the familiar basic types like int, float and so on because they are unnamed types. A particular named type that aliases a basic type can have methods defined on it however. Coming back to this experiment, ToOneLineFormat needs to <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/csharp_to_go/changeset/c364216640fc/">have a concrete receiver</a>:</p>
+<pre lang="none">func (a Address1) ToOneLineFormat() string {
+    return a.StreetNumber() + " " + a.StreetName()
+}
+func (a Address2) ToOneLineFormat() string {
+    return a.StreetNumber() + " " + a.StreetName()
+}</pre>
+
+<p>At this point I have brought back all the duplication that I was hoping to eliminate. On the up side, I have working go code.</p>
+<p>Go has its own mechanism to reduce duplication. Its based on composing new types from existing types. A type can have an unnamed field of another type. The properties of the second, contained type can be accessed as if they were properties of the containing type. Address1 and Address2 could be <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/csharp_to_go/changeset/34e541d9a3cf/">defined in terms of</a> a BaseAddress type.</p>
+<pre lang="none">type BaseAddress struct {
+    streetNumber, streetName string
+}
+type Address1 struct {
+    BaseAddress
+}
+type Address2 struct {
+    BaseAddress
+}</pre>
+
+<p>These new versions of Address1 and 2 will have exactly the same fields as the old type. An object composed like this can also receive methods as if it were an object of the anonymous field’s type. This allows us to move the  ToOneLineFormat method on to BaseAddress directly. Also, since StreetNumber() and StreetName() simply return the value of fields which are available on BaseAddress, we can remove them. This in turn means IAddress is no longer useful. The complete code for Address1 and Address2 is significantly more compact. Note that the initialisation expression does need to change now, to recognise the anonymous BaseAddress field.</p>
+<pre lang="none">type BaseAddress struct {
+    streetNumber, streetName string
+}
+func (BaseAddress a) ToOneLineFormat() {
+    return a.streetNumber + " " + a.streetName
+}
+type Address1 struct {
+    BaseAddress
+}
+type Address2 struct {
+    BaseAddress
+}
+
+func main() {
+    address1 := &Address1{BaseAddress{"12A", "Spencer Street", "Melbourne", "VIC", "3000"}};
+    fmt.Println(address1.ToOneLineFormat());
+
+    address2 := &Address2{BaseAddress{"12A", "Spencer Street", "Melbourne", "VIC", "3000"}};
+    fmt.Println(address2.ToOneLineFormat())
+}</pre>
+
+<p>Address1 and Address2 themselves are looking redundant now. Having a BaseAddress with two classes that “inherit” from it seems to clash strongly with the ideas of go. Based on this exercise, I believe an anonymous field still needs to capture some freestanding meaning of its own. The two types are a somewhat artificial constraint anyway. I’ll leave them here, as they were the two classes that motivated this experiment originally.</p>
+<p>Hopefully in go, you won’t often end up in the same situation we faced in C#, needing two structurally identical types.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://intwoplacesatonce.com/2010/01/moving-on-to-go-but-ending-up-much-further-afield/" data-id="ckja6a8gn0009l99s0nabdtuu" class="article-share-link">Share</a>
+      
+        <a href="http://intwoplacesatonce.com/2010/01/moving-on-to-go-but-ending-up-much-further-afield/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/broken-code/" rel="tag">broken code</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c#</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/code-on-bitbucket/" rel="tag">code on bitbucket</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/composition-over-inheritance/" rel="tag">composition over inheritance</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/duplication/" rel="tag">duplication</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/" rel="tag">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/refactoring/" rel="tag">refactoring</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-in-c-3-5-interface-extension-methods-mixin" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2009/12/in-c-3-5-interface-extension-methods-mixin/" class="article-date">
+  <time datetime="2009-12-06T16:34:21.000Z" itemprop="datePublished">2009-12-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2009/12/in-c-3-5-interface-extension-methods-mixin/">in C# 3.5: interface + extension methods = mixin</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>On my current project, we have ended up with several classes that have the same, or nearly the same fields. The classes are generated from xsds that describe a set of SOAP services that we integrate with. We have tried avoiding the generation or tweaking the xsds to avoid the situation, but accepting the duplicate classes actually seemed to be the best way forward. So, we have code in a generated file like this:</p>
+<pre lang="csharp">namespace ServiceClients.Generated
+{
+    public partial class Address1
+    {
+        public string StreetNumber { get; set; }
+        public string StreetName { get; set; }
+        public string Suburb { get; set; }
+        public string State { get; set; }
+        public string PostCode { get; set; }
+    }
+
+    public partial class Address2
+    {
+        public string StreetNumber { get; set; }
+        public string StreetName { get; set; }
+        public string Suburb { get; set; }
+        public string State { get; set; }
+        public string PostCode { get; set; }
+    }
+}</pre>
+
+<p>Besides the obvious problem with duplication, this code is also difficult to extend. As just one example, we wanted to display addresses in a one-line format:</p>
+<pre lang="csharp">var address = new Address1
+                  {
+                      StreetNumber = "12A",
+                      StreetName = "Spencer Street",
+                      Suburb = "Melbourne",
+                      State = "VIC",
+                      PostCode = "3000",
+                  };
+Assert.AreEqual("12A Spencer Street, Melbourne, VIC 3000",
+                address.ToOneLineFormat());</pre>
+
+<p>The implementation for this method is fairly simple, but where can we implement it so that we will only need to write it once? Ideally what we would like is a <a target="_blank" rel="noopener" href="http://en.wikipedia.org/wiki/Mixin">mixin</a>: a way of adding new methods to a class without adding any fields, and without necessarily changing the type. Although C# does not have a language facility for mixins, we can get a similar effect by using an interface and an extension method.</p>
+<pre lang="csharp">namespace ServiceClients.Generated.Extensions
+{
+    public interface IAddress
+    {
+        string StreetNumber { get; }
+        string StreetName { get; }
+        string Suburb { get; }
+        string State { get; }
+        string PostCode { get; }
+    }
+
+    public static class AddressExtensions
+    {
+        public static string ToOneLineFormat(this IAddress address)
+        {
+            const string format = "{0} {1}, {2}, {3} {4}";
+            return string.Format(format,
+                    address.StreetNumber,
+                    address.StreetName,
+                    address.Suburb,
+                    address.State,
+                    address.PostCode);
+        }
+    }
+}</pre>
+
+<p>There is one more step. In C# the two concrete types need to explicitly implement the <code>IAddress</code> interface so that we can use the <code>ToOneLineFormat</code> method on them. I’ve never had much use for partial classes, but they were a lifesaver in this case. In another file away from the mammoth 40,000 line long svcutil generated file, the interface can be easily added to both classes.</p>
+<pre lang="csharp">namespace ServiceClients.Generated
+{
+    public partial class Address1 : IAddress {}
+    public partial class Address2 : IAddress {}
+}</pre>
+
+<p>And there it is: a mixin! The ToOneLineFormat method is defined in one place, can be used with either Address class, and there is no need to change the generated code or the inheritance hierarchy.</p>
+<p>For a time I was quite sure I had heard that methods implemented directly on interfaces would be part of C# 4. I must have been delusional though, because it is not on the list of new features. If it were, it seems it would just be syntax sugar for the above approach.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://intwoplacesatonce.com/2009/12/in-c-3-5-interface-extension-methods-mixin/" data-id="ckja6a8gi0003l99s88yl667a" class="article-share-link">Share</a>
+      
+        <a href="http://intwoplacesatonce.com/2009/12/in-c-3-5-interface-extension-methods-mixin/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c#</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/duplication/" rel="tag">duplication</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/extension-methods/" rel="tag">extension methods</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mixin/" rel="tag">mixin</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/partial-classes/" rel="tag">partial classes</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/refactoring/" rel="tag">refactoring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/svcutil/" rel="tag">svcutil</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+  <nav id="page-nav">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">__(&#39;next&#39;) &amp;raquo;</a>
+  </nav>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/cruisecontrol-net/" rel="tag">CruiseControl.net</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mercurial/" rel="tag">Mercurial</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/subversion/" rel="tag">Subversion</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/automation/" rel="tag">automation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bash/" rel="tag">bash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/batch-files/" rel="tag">batch files</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blocks/" rel="tag">blocks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/broken-code/" rel="tag">broken code</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/brutal-cast/" rel="tag">brutal cast</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c#</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/casting/" rel="tag">casting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cmd-scripts/" rel="tag">cmd scripts</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/code-on-bitbucket/" rel="tag">code on bitbucket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compiler/" rel="tag">compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/composition-over-inheritance/" rel="tag">composition over inheritance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/data-export/" rel="tag">data export</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/debugging/" rel="tag">debugging</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dispatch/" rel="tag">dispatch</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dispose/" rel="tag">dispose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/duplication/" rel="tag">duplication</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic/" rel="tag">dynamic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extension-methods/" rel="tag">extension methods</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f/" rel="tag">f#</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/fat32/" rel="tag">fat32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gmaps/" rel="tag">gmaps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/" rel="tag">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/google-maps/" rel="tag">google maps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hg/" rel="tag">hg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hgsubversion/" rel="tag">hgsubversion</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/howto/" rel="tag">howto</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/" rel="tag">html</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html5/" rel="tag">html5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/interactionist/" rel="tag">interactionist</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/introducing-changeset/" rel="tag">introducing ChangeSet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/" rel="tag">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/layout/" rel="tag">layout</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lean-on-the-compiler/" rel="tag">lean on the compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/message/" rel="tag">message</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/meta/" rel="tag">meta</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mixin/" rel="tag">mixin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mobile/" rel="tag">mobile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/msbuild/" rel="tag">msbuild</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/object-instantiation/" rel="tag">object instantiation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/objective-c/" rel="tag">objective-c</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/open-source/" rel="tag">open source</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/partial-classes/" rel="tag">partial classes</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance/" rel="tag">performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/" rel="tag">postgres</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/psql/" rel="tag">psql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/putty/" rel="tag">putty</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdc/" rel="tag">rdc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/recovery/" rel="tag">recovery</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redshift/" rel="tag">redshift</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/refactoring/" rel="tag">refactoring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/remote-desktop-connection/" rel="tag">remote desktop connection</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/resource-acquisition/" rel="tag">resource acquisition</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scope/" rel="tag">scope</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/screen/" rel="tag">screen</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/" rel="tag">ssh</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh-tunnel/" rel="tag">ssh tunnel</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svcutil/" rel="tag">svcutil</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svn/" rel="tag">svn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tcpip/" rel="tag">tcpip</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/test-doubles/" rel="tag">test doubles</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/testing/" rel="tag">testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/unit-tests/" rel="tag">unit tests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/unix/" rel="tag">unix</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/using/" rel="tag">using</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viewport/" rel="tag">viewport</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/win7/" rel="tag">win7</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/" rel="tag">windows</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/winxp/" rel="tag">winxp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/cruisecontrol-net/" style="font-size: 16.67px;">CruiseControl.net</a> <a href="/tags/mercurial/" style="font-size: 10px;">Mercurial</a> <a href="/tags/subversion/" style="font-size: 10px;">Subversion</a> <a href="/tags/automation/" style="font-size: 10px;">automation</a> <a href="/tags/bash/" style="font-size: 10px;">bash</a> <a href="/tags/batch-files/" style="font-size: 10px;">batch files</a> <a href="/tags/blocks/" style="font-size: 10px;">blocks</a> <a href="/tags/broken-code/" style="font-size: 10px;">broken code</a> <a href="/tags/brutal-cast/" style="font-size: 10px;">brutal cast</a> <a href="/tags/c/" style="font-size: 20px;">c#</a> <a href="/tags/casting/" style="font-size: 10px;">casting</a> <a href="/tags/cmd-scripts/" style="font-size: 10px;">cmd scripts</a> <a href="/tags/code-on-bitbucket/" style="font-size: 10px;">code on bitbucket</a> <a href="/tags/compiler/" style="font-size: 10px;">compiler</a> <a href="/tags/composition-over-inheritance/" style="font-size: 10px;">composition over inheritance</a> <a href="/tags/data-export/" style="font-size: 10px;">data export</a> <a href="/tags/debugging/" style="font-size: 10px;">debugging</a> <a href="/tags/dispatch/" style="font-size: 10px;">dispatch</a> <a href="/tags/dispose/" style="font-size: 10px;">dispose</a> <a href="/tags/duplication/" style="font-size: 13.33px;">duplication</a> <a href="/tags/dynamic/" style="font-size: 13.33px;">dynamic</a> <a href="/tags/extension-methods/" style="font-size: 10px;">extension methods</a> <a href="/tags/f/" style="font-size: 10px;">f#</a> <a href="/tags/fat32/" style="font-size: 10px;">fat32</a> <a href="/tags/gmaps/" style="font-size: 10px;">gmaps</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/google-maps/" style="font-size: 10px;">google maps</a> <a href="/tags/hg/" style="font-size: 10px;">hg</a> <a href="/tags/hgsubversion/" style="font-size: 10px;">hgsubversion</a> <a href="/tags/howto/" style="font-size: 10px;">howto</a> <a href="/tags/html/" style="font-size: 10px;">html</a> <a href="/tags/html5/" style="font-size: 10px;">html5</a> <a href="/tags/interactionist/" style="font-size: 10px;">interactionist</a> <a href="/tags/introducing-changeset/" style="font-size: 13.33px;">introducing ChangeSet</a> <a href="/tags/javascript/" style="font-size: 10px;">javascript</a> <a href="/tags/layout/" style="font-size: 10px;">layout</a> <a href="/tags/lean-on-the-compiler/" style="font-size: 10px;">lean on the compiler</a> <a href="/tags/message/" style="font-size: 10px;">message</a> <a href="/tags/meta/" style="font-size: 10px;">meta</a> <a href="/tags/mixin/" style="font-size: 10px;">mixin</a> <a href="/tags/mobile/" style="font-size: 10px;">mobile</a> <a href="/tags/msbuild/" style="font-size: 10px;">msbuild</a> <a href="/tags/object-instantiation/" style="font-size: 10px;">object instantiation</a> <a href="/tags/objective-c/" style="font-size: 10px;">objective-c</a> <a href="/tags/open-source/" style="font-size: 10px;">open source</a> <a href="/tags/partial-classes/" style="font-size: 10px;">partial classes</a> <a href="/tags/performance/" style="font-size: 10px;">performance</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/psql/" style="font-size: 10px;">psql</a> <a href="/tags/putty/" style="font-size: 10px;">putty</a> <a href="/tags/rdc/" style="font-size: 10px;">rdc</a> <a href="/tags/recovery/" style="font-size: 10px;">recovery</a> <a href="/tags/redshift/" style="font-size: 13.33px;">redshift</a> <a href="/tags/refactoring/" style="font-size: 20px;">refactoring</a> <a href="/tags/remote-desktop-connection/" style="font-size: 10px;">remote desktop connection</a> <a href="/tags/resource-acquisition/" style="font-size: 10px;">resource acquisition</a> <a href="/tags/scope/" style="font-size: 10px;">scope</a> <a href="/tags/screen/" style="font-size: 10px;">screen</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssh-tunnel/" style="font-size: 10px;">ssh tunnel</a> <a href="/tags/svcutil/" style="font-size: 10px;">svcutil</a> <a href="/tags/svn/" style="font-size: 10px;">svn</a> <a href="/tags/tcpip/" style="font-size: 10px;">tcpip</a> <a href="/tags/test-doubles/" style="font-size: 10px;">test doubles</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a> <a href="/tags/unit-tests/" style="font-size: 10px;">unit tests</a> <a href="/tags/unix/" style="font-size: 10px;">unix</a> <a href="/tags/using/" style="font-size: 10px;">using</a> <a href="/tags/viewport/" style="font-size: 10px;">viewport</a> <a href="/tags/win7/" style="font-size: 10px;">win7</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/winxp/" style="font-size: 10px;">winxp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">January 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/09/">September 2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/06/">June 2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2010/10/">October 2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2010/09/">September 2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2010/04/">April 2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2010/01/">January 2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2009/12/">December 2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2009/11/">November 2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2009/08/">August 2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2009/07/">July 2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2009/05/">May 2009</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/01/exporting-data-from-redshift/">exporting data from redshift</a>
+          </li>
+        
+          <li>
+            <a href="/2017/01/specifying-distkey-on-a-redshift-temp-table-in-datagrip/">specifying distkey on a redshift temp table in DataGrip</a>
+          </li>
+        
+          <li>
+            <a href="/2011/09/the-other-thing-about-using-blocks/">the other thing about &#34;using&#34; blocks</a>
+          </li>
+        
+          <li>
+            <a href="/2011/06/the-viewport-meta-tag-and-iphone/">the viewport meta tag, and iPhone</a>
+          </li>
+        
+          <li>
+            <a href="/2010/10/restoring-recovered-files-identity/">restoring recovered files identity</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 David Cameron<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'in-two-places-at-once';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>
