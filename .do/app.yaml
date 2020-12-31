@@ -1,0 +1,9 @@
+name: blog
+static_sites:
+- build_command: yarn build
+  environment_slug: hexo
+  github:
+    branch: source
+    deploy_on_push: true
+    repo: davcamer/davcamer.github.io
+  name: blog
