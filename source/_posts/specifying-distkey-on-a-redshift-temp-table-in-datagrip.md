@@ -1,6 +1,7 @@
 ---
 title: specifying distkey on a redshift temp table in DataGrip
 date: 2017-01-17 22:24:09
+updated: 2017-01-17 22:24:09
 tags:
 - redshift
 ---

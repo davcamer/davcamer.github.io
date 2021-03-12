@@ -2,6 +2,7 @@
 title: installing hg subversion on windows to test it
 id: 36
 date: 2009-07-20 00:19:28
+updated: 2009-07-20 00:19:28
 tags:
 - Mercurial
 - Subversion

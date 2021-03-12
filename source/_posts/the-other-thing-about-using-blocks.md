@@ -2,6 +2,7 @@
 title: the other thing about "using" blocks
 id: 145
 date: 2011-09-01 13:39:57
+updated: 2011-09-01 13:39:57
 tags:
 - blocks
 - 'c#'

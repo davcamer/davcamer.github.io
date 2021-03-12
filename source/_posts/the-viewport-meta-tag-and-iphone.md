@@ -2,6 +2,7 @@
 title: 'the viewport meta tag, and iPhone'
 id: 126
 date: 2011-06-29 14:37:58
+updated: 2011-06-29 14:37:58
 tags:
 - html
 - html5

@@ -2,6 +2,7 @@
 title: 'introducing a ChangeSet class to CruiseControl.net: why?'
 id: 19
 date: 2009-07-07 09:20:51
+updated: 2009-07-07 09:20:51
 tags:
 - CruiseControl.net
 - 'c#'

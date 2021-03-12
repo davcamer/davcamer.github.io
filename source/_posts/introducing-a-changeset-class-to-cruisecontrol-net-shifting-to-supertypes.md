@@ -2,6 +2,7 @@
 title: 'introducing a ChangeSet class to CruiseControl.net: shifting to supertypes'
 id: 29
 date: 2009-07-08 22:41:33
+updated: 2009-07-08 22:41:33
 tags:
 - CruiseControl.net
 - 'c#'

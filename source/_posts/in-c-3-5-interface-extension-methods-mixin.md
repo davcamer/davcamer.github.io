@@ -2,6 +2,7 @@
 title: 'in C# 3.5: interface + extension methods = mixin'
 id: 81
 date: 2009-12-06 11:34:21
+updated: 2009-12-06 11:34:21
 tags:
 - 'c#'
 - duplication

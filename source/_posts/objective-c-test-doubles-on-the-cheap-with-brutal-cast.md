@@ -2,6 +2,7 @@
 title: objective-c test doubles on the cheap with brutal cast
 id: 113
 date: 2010-09-13 16:56:39
+updated: 2010-09-13 16:56:39
 tags:
 - brutal cast
 - casting

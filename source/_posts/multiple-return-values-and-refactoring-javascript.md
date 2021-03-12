@@ -2,6 +2,7 @@
 title: multiple return values and refactoring javascript
 id: 103
 date: 2010-04-28 15:57:44
+updated: 2010-04-28 15:57:44
 tags:
 - dynamic
 - gmaps

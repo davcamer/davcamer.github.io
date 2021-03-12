@@ -2,6 +2,7 @@
 title: 'remote desktop connection to localhost: a regression in Windows 7?'
 id: 101
 date: 2010-01-27 22:57:16
+updated: 2010-01-27 22:57:16
 tags:
 - putty
 - rdc

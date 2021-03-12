@@ -1,6 +1,7 @@
 ---
 title: exporting data from redshift
 date: 2017-01-31 22:05:33
+updated: 2017-01-31 22:05:33
 tags:
 - redshift
 - psql

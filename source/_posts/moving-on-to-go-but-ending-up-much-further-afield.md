@@ -2,6 +2,7 @@
 title: 'moving on to go, but ending up much further afield'
 id: 90
 date: 2010-01-15 22:51:11
+updated: 2010-01-15 22:51:11
 tags:
 - broken code
 - 'c#'
