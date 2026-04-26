@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta name="google-site-verification" content="julFRRBX5NRKGlcAn4A-o-T6HpIULRNYejRHM46eR68">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"intwoplacesatonce.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Lately I’ve been learning F#. I have used SML before for little experiments. SML is one of F#’s parents, and a lot of the basic syntax is familiar. The things I’ve been learning and discovering the mo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="compiler created modules in F#">
+<meta property="og:url" content="http://intwoplacesatonce.com/2009/05/compiler-created-modules-in-f/index.html">
+<meta property="og:site_name" content="in two places at once">
+<meta property="og:description" content="Lately I’ve been learning F#. I have used SML before for little experiments. SML is one of F#’s parents, and a lot of the basic syntax is familiar. The things I’ve been learning and discovering the mo">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://twoplaces.files.wordpress.com/2009/05/screen-capture-4.png">
+<meta property="og:image" content="http://twoplaces.files.wordpress.com/2009/05/screen-capture-1.png">
+<meta property="og:image" content="http://twoplaces.files.wordpress.com/2009/05/screen-capture-2.png">
+<meta property="og:image" content="http://twoplaces.files.wordpress.com/2009/05/screen-capture-3.png">
+<meta property="article:published_time" content="2009-05-18T12:53:01.000Z">
+<meta property="article:modified_time" content="2009-05-18T12:53:01.000Z">
+<meta property="article:author" content="David Cameron">
+<meta property="article:tag" content="f#">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://twoplaces.files.wordpress.com/2009/05/screen-capture-4.png">
+
+<link rel="canonical" href="http://intwoplacesatonce.com/2009/05/compiler-created-modules-in-f/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en-US'
+  };
+</script>
+
+  <title>compiler created modules in F# | in two places at once</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-9675667-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-9675667-1');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">in two places at once</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">instead of a rewrite</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en-US">
+    <link itemprop="mainEntityOfPage" href="http://intwoplacesatonce.com/2009/05/compiler-created-modules-in-f/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="David Cameron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="in two places at once">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          compiler created modules in F#
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2009-05-18 08:53:01" itemprop="dateCreated datePublished" datetime="2009-05-18T08:53:01-04:00">2009-05-18</time>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2009/05/compiler-created-modules-in-f/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2009/05/compiler-created-modules-in-f/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Lately I’ve been learning F#. I have used SML before for little experiments. SML is one of F#’s parents, and a lot of the basic syntax is familiar. The things I’ve been learning and discovering the most about are the large-scale issues. How does C# call F#? F# call C#? Or even, F# call F#? I wasn’t expecting that last one to be a challenge, but it was. Here’s why…</p>
+<p>I started in the way I start almost any project: code in one place, tests in another. My first goal is to get the tests calling the code. This means a trivial test like making sure that a function returns true, when it… returns true.</p>
+<p><img src="http://twoplaces.files.wordpress.com/2009/05/screen-capture-4.png" alt="screen-capture-4.png"></p>
+<p>This is about the simplest F# solution I can picture. I’m already stumbling though, as evidenced by the red squiggly underneath always_true in TestsFile.fs. That squiggle is for a “The value or constructor ‘always_true’ is not defined.” error. But it is defined, over in CodeFile.fs, and I have no idea how to be more specific because all my declarations are top-level. I haven’t had to add any namespace or type names, which is nice. But as a result, I don’t know which namespaces or types these items are part of.</p>
+<p>Opening the assemblies in reflector might help:</p>
+<p><img src="http://twoplaces.files.wordpress.com/2009/05/screen-capture-1.png" alt="screen-capture-1.png"></p>
+<p>There it is! My top-level declarations in CodeFile.fs are part of the CodeFile type in no namespace. always_true is there as a public static method, and my_true is there as a get-only public static property. There are three other internal types in there that have been created by the compiler.</p>
+<p>F# will provide this automatic module even if an explicit module is declared in the file. For example, you might think that since always_true and my_true ended up as part of the CodeFile type, that the code in the screenshot above is equivalent to</p>
+<pre lang="ocaml">module CodeFile =
+    let my_true = true
+    let always_true () = my_true</pre>
+<p>Just to check, I’ll compile that and open it up in Reflector again.</p>
+<p><img src="http://twoplaces.files.wordpress.com/2009/05/screen-capture-2.png" alt="screen-capture-2.png"></p>
+<p>Instead of overwriting the automatic module, the explicitly declared module is nested inside of the automatic module. The public static type CodeFile, has a nested public static type CodeFile+CodeFile. Not what I was expecting.</p>
+<p>The automatic module will continue to be produced unless I add a namespace declaration.</p>
+<pre lang="ocaml">namespace Code
+
+module CodeFile =
+    let my_true = true
+    let always_true () = my_true</pre>
+<p>This ends up with a structure more familiar from C# work. CodeFile is a type within the Code namespace.</p>
+<p><img src="http://twoplaces.files.wordpress.com/2009/05/screen-capture-3.png" alt="screen-capture-3.png"></p>
+<p>I now have a pretty good picture of how the automatic naming works, but there are still scenarios I’d like to try. First, what happens if I declare a namespace but don’t include an explicit module declaration? I have a hunch, but I’ll try it to confirm.</p>
+<p>This surprised me! This is a compile-time error. There is no automatic module creation to make this work.</p>
+<pre lang="ocaml">namespace Code
+
+let my_true = true // compile-time error: "Namespaces may not contain values.
+                   // Consider using a module to hold your value declarations."
+
+module CodeFile =
+    let always_true () = my_true // ok</pre>
+<p>The second question I had in mind was about mixing a module declaration and top-level declarations in one file. This has been resolved by the previous findings, though. If my file has a namespace declaration, the top-level declarations will be illegal. If it does not have a namespace declaration, then an automatic module with the name of the file will be created.</p>
+<p>This is a simpler result than I was expecting, because it means there is only a single rule at play:</p>
+<ol>
+<li> If an .fs file does not include a namespace declaration, a module will be created in the top-most namespace to contain the file’s declarations.<br>Knowing this, I can return my code under test to how it looked before and get my tests working.</li>
+</ol>
+<p>In CodeFile.fs, in the Code project:</p>
+<pre lang="ocaml">#light
+
+let always_true () = true</pre>
+<p>In TestsFile.fs, in the Tests project:</p>
+<pre lang="ocaml">#light
+
+open Xunit
+
+[<Fact>] let true_is_true () = Assert.True(CodeFile.always_true ())</pre>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/f/" rel="tag"># f#</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2009/07/introducing-a-changeset-class-to-cruisecontrol-net-why/" rel="next" title="introducing a ChangeSet class to CruiseControl.net: why?">
+      introducing a ChangeSet class to CruiseControl.net: why? <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">David Cameron</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">72</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2009 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">David Cameron</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://in-two-places-at-once.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://intwoplacesatonce.com/2009/05/compiler-created-modules-in-f/";
+    this.page.identifier = "2009/05/compiler-created-modules-in-f/";
+    this.page.title = "compiler created modules in F#";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://in-two-places-at-once.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

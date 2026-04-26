@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta name="google-site-verification" content="julFRRBX5NRKGlcAn4A-o-T6HpIULRNYejRHM46eR68">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"intwoplacesatonce.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="While I was preparing my last blog post about mixins in C#, I was also reading about go. From looking at go’s syntax, I thought I would be able to replace the C# code one-for-one with go code and end">
+<meta property="og:type" content="article">
+<meta property="og:title" content="moving on to go, but ending up much further afield">
+<meta property="og:url" content="http://intwoplacesatonce.com/2010/01/moving-on-to-go-but-ending-up-much-further-afield/index.html">
+<meta property="og:site_name" content="in two places at once">
+<meta property="og:description" content="While I was preparing my last blog post about mixins in C#, I was also reading about go. From looking at go’s syntax, I thought I would be able to replace the C# code one-for-one with go code and end">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2010-01-16T03:51:11.000Z">
+<meta property="article:modified_time" content="2010-01-16T03:51:11.000Z">
+<meta property="article:author" content="David Cameron">
+<meta property="article:tag" content="c#">
+<meta property="article:tag" content="duplication">
+<meta property="article:tag" content="refactoring">
+<meta property="article:tag" content="broken code">
+<meta property="article:tag" content="code on bitbucket">
+<meta property="article:tag" content="composition over inheritance">
+<meta property="article:tag" content="go">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://intwoplacesatonce.com/2010/01/moving-on-to-go-but-ending-up-much-further-afield/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en-US'
+  };
+</script>
+
+  <title>moving on to go, but ending up much further afield | in two places at once</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-9675667-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-9675667-1');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">in two places at once</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">instead of a rewrite</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en-US">
+    <link itemprop="mainEntityOfPage" href="http://intwoplacesatonce.com/2010/01/moving-on-to-go-but-ending-up-much-further-afield/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="David Cameron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="in two places at once">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          moving on to go, but ending up much further afield
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2010-01-15 22:51:11" itemprop="dateCreated datePublished" datetime="2010-01-15T22:51:11-05:00">2010-01-15</time>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2010/01/moving-on-to-go-but-ending-up-much-further-afield/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2010/01/moving-on-to-go-but-ending-up-much-further-afield/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>While I was preparing my last blog post about mixins in C#, I was also reading about go. From looking at go’s syntax, I thought I would be able to replace the C# code one-for-one with go code and end up with a valid program. I thought <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/csharp_to_go/changeset/cd1b05edfddb/">this would be the code</a>:</p>
+<pre lang="none">// Not actually valid go!
+
+package main
+
+import "fmt"
+
+type IAddress interface {
+    StreetNumber string;
+    StreetName string;
+}
+func (a IAddress) ToOneLineFormat() string {
+    return a.StreetNumber() + " " + a.StreetName()
+}
+
+type Address1 struct {
+    StreetNumber, StreetName string
+}
+type Address2 struct {
+    StreetNumber, StreetName string
+}
+
+func main() {
+    address1 := &Address1{"12A", "Spencer Street"};
+    fmt.Println(address1.ToOneLineFormat());
+
+    address2 := &Address2{"12A", "Spencer Street"};
+    fmt.Println(address2.ToOneLineFormat())
+}</pre>
+
+<p>I liked this code. It’s slightly more lightweight than the equivalent C# because the interfaces don’t need to be explicitly declared on the implementing classes. Otherwise it’s quite similar. Declaring funcs away from types seemed a natural analogue to the interface + extension methods approach I described in the last post.</p>
+<p>But this is not valid go code. Why not?</p>
+<p>The first point is, that I’ve confused C#’s concept of properties with both fields and methods in my go code. The declarations in the structs can remain as fields, but the declarations in the interface must <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/csharp_to_go/changeset/38a29a5faf45/">change to be methods</a>. My interface needs to be:</p>
+<pre lang="none">type IAddress interface {
+    StreetNumber() string;
+    StreetName() string;
+}</pre>
+
+<p>Now, to conform to the interface the two Address types need to have <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/csharp_to_go/changeset/512eecb12230/">methods that correspond to the interface</a>. Not fields.</p>
+<pre lang="none">type Address1 struct {
+    streetNumber, streetName string
+}
+func (a Address1) StreetNumber() { return a.streetNumber }
+func (a Address1) StreetName() { return a.streetName }
+type Address2 struct {
+    streetNumber, streetName string
+}
+func (a Address2) StreetNumber() { return a.streetNumber }
+func (a Address2) StreetName() { return a.streetName }</pre>
+
+<p>Address1 and Address2 now both conform to the IAddress interface, though at the price of duplicate property/accessor/getter code. Accessors like this aren’t particularly idiomatic for go, so there is no syntactic sugar to support them. Members are intended to either be fields, possibly public, or methods implementing significant behaviour.</p>
+<p>The next problem arises because in go methods cannot be defined on interfaces. The syntax would seem to allow it, but it is simply illegal. The receive of a method must be a pointer to a named type or a named type itself. No interfaces. And also none of the familiar basic types like int, float and so on because they are unnamed types. A particular named type that aliases a basic type can have methods defined on it however. Coming back to this experiment, ToOneLineFormat needs to <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/csharp_to_go/changeset/c364216640fc/">have a concrete receiver</a>:</p>
+<pre lang="none">func (a Address1) ToOneLineFormat() string {
+    return a.StreetNumber() + " " + a.StreetName()
+}
+func (a Address2) ToOneLineFormat() string {
+    return a.StreetNumber() + " " + a.StreetName()
+}</pre>
+
+<p>At this point I have brought back all the duplication that I was hoping to eliminate. On the up side, I have working go code.</p>
+<p>Go has its own mechanism to reduce duplication. Its based on composing new types from existing types. A type can have an unnamed field of another type. The properties of the second, contained type can be accessed as if they were properties of the containing type. Address1 and Address2 could be <a target="_blank" rel="noopener" href="http://bitbucket.org/davcamer/csharp_to_go/changeset/34e541d9a3cf/">defined in terms of</a> a BaseAddress type.</p>
+<pre lang="none">type BaseAddress struct {
+    streetNumber, streetName string
+}
+type Address1 struct {
+    BaseAddress
+}
+type Address2 struct {
+    BaseAddress
+}</pre>
+
+<p>These new versions of Address1 and 2 will have exactly the same fields as the old type. An object composed like this can also receive methods as if it were an object of the anonymous field’s type. This allows us to move the  ToOneLineFormat method on to BaseAddress directly. Also, since StreetNumber() and StreetName() simply return the value of fields which are available on BaseAddress, we can remove them. This in turn means IAddress is no longer useful. The complete code for Address1 and Address2 is significantly more compact. Note that the initialisation expression does need to change now, to recognise the anonymous BaseAddress field.</p>
+<pre lang="none">type BaseAddress struct {
+    streetNumber, streetName string
+}
+func (BaseAddress a) ToOneLineFormat() {
+    return a.streetNumber + " " + a.streetName
+}
+type Address1 struct {
+    BaseAddress
+}
+type Address2 struct {
+    BaseAddress
+}
+
+func main() {
+    address1 := &Address1{BaseAddress{"12A", "Spencer Street", "Melbourne", "VIC", "3000"}};
+    fmt.Println(address1.ToOneLineFormat());
+
+    address2 := &Address2{BaseAddress{"12A", "Spencer Street", "Melbourne", "VIC", "3000"}};
+    fmt.Println(address2.ToOneLineFormat())
+}</pre>
+
+<p>Address1 and Address2 themselves are looking redundant now. Having a BaseAddress with two classes that “inherit” from it seems to clash strongly with the ideas of go. Based on this exercise, I believe an anonymous field still needs to capture some freestanding meaning of its own. The two types are a somewhat artificial constraint anyway. I’ll leave them here, as they were the two classes that motivated this experiment originally.</p>
+<p>Hopefully in go, you won’t often end up in the same situation we faced in C#, needing two structurally identical types.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/c/" rel="tag"># c#</a>
+              <a href="/tags/duplication/" rel="tag"># duplication</a>
+              <a href="/tags/refactoring/" rel="tag"># refactoring</a>
+              <a href="/tags/broken-code/" rel="tag"># broken code</a>
+              <a href="/tags/code-on-bitbucket/" rel="tag"># code on bitbucket</a>
+              <a href="/tags/composition-over-inheritance/" rel="tag"># composition over inheritance</a>
+              <a href="/tags/go/" rel="tag"># go</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2009/12/in-c-3-5-interface-extension-methods-mixin/" rel="prev" title="in C# 3.5: interface + extension methods = mixin">
+      <i class="fa fa-chevron-left"></i> in C# 3.5: interface + extension methods = mixin
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2010/01/remote-desktop-connection-to-localhost-a-regression-in-windows-7/" rel="next" title="remote desktop connection to localhost: a regression in Windows 7?">
+      remote desktop connection to localhost: a regression in Windows 7? <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">David Cameron</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">72</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2009 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">David Cameron</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://in-two-places-at-once.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://intwoplacesatonce.com/2010/01/moving-on-to-go-but-ending-up-much-further-afield/";
+    this.page.identifier = "2010/01/moving-on-to-go-but-ending-up-much-further-afield/";
+    this.page.title = "moving on to go, but ending up much further afield";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://in-two-places-at-once.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
